@@ -99,6 +99,12 @@
   font-size: var(--step--2);
 }
 
+/* the strip is a footer of its own: same hairline the rest of the card's feet use */
+.node-card .balance {
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--edge-soft);
+}
+
 .node-card__verdict {
   color: var(--gain);
   overflow: hidden;

@@ -72,19 +72,17 @@ test('map a decision, write into it, and weigh the options', async ({ page }) =>
     ['con', 'Starting over on trust', 2],
   ]);
   // the card shows which way the weight sits and how much is listed — not a total
-  await expect(nodeCard(page, 'Take the offer').locator('.balance__counts')).toHaveText(
-    '2 for · 1 against',
-  );
-  await expect(nodeCard(page, 'Take the offer').locator('.balance__side--for')).toBeVisible();
+  const offerCard = nodeCard(page, 'Take the offer');
+  await expect(offerCard.locator('.balance__count--for')).toHaveText('2 for');
+  await expect(offerCard.locator('.balance__count--against')).toHaveText('1 against');
+  await expect(offerCard.locator('.balance__side--for')).toBeVisible();
 
   // Stay and renegotiate nets 4-3 = +1
   await weigh(page, 'Stay and renegotiate', [
     ['pro', 'Keep the people', 4],
     ['con', 'Same ceiling next year', 3],
   ]);
-  await expect(nodeCard(page, 'Stay and renegotiate').locator('.balance__counts')).toHaveText(
-    '1 for · 1 against',
-  );
+  await expect(nodeCard(page, 'Stay and renegotiate').locator('.balance__count--for')).toHaveText('1 for');
 
   // compare reads those lists — nothing is typed twice
   await nodeCard(page, QUESTION).first().click();

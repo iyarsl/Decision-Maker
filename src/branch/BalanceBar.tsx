@@ -23,8 +23,12 @@ export function BalanceBar({ balance }: { balance: Balance }) {
           <span className="balance__side balance__side--against" style={{ flexGrow: againstTotal }} />
         )}
       </div>
+      {/* each count sits under the segment it belongs to, so the row lines up with the bar */}
       <p className="balance__counts data" aria-hidden="true">
-        {pros.length} for · {cons.length} against
+        {pros.length > 0 && <span className="balance__count balance__count--for">{pros.length} for</span>}
+        {cons.length > 0 && (
+          <span className="balance__count balance__count--against">{cons.length} against</span>
+        )}
       </p>
     </div>
   );
