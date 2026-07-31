@@ -190,6 +190,52 @@
   color: var(--mist);
 }
 
+/* ---------- connectors ---------- */
+
+/* The dot is small on purpose, but the thing you have to hit should not be. A generous
+   invisible target sits around it, and both dot and target grow while the card is under
+   the cursor. */
+/* Never touch transform here: React Flow positions the dot with one, and overriding it
+   sends the handle wandering off the card. Size, colour and a ring do all the work. */
+/* The handle itself is a generous 20px target; the dot you see is drawn inside it. Do not
+   move this to an ::after overlay — that steals the handle's own hit test — and never set
+   transform here, since React Flow positions the handle with one. */
+.react-flow__handle {
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+}
+
+.react-flow__handle::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--panel-raised);
+  border: 1px solid var(--mist-faint);
+  transition: inset 160ms var(--ease), background 160ms var(--ease), border-color 160ms var(--ease);
+}
+
+.react-flow__node:hover .react-flow__handle::before,
+.react-flow__node.selected .react-flow__handle::before {
+  inset: 4px;
+  border-color: var(--mist);
+}
+
+.react-flow__handle:hover::before,
+.react-flow__handle.connectingfrom::before {
+  inset: 2px;
+  background: var(--clear);
+  border-color: var(--clear);
+}
+
+.canvas-tools {
+  display: flex;
+  gap: var(--sp-2);
+}
+
 .canvas-hint__selection {
   margin-top: var(--sp-1);
   color: var(--clear);
