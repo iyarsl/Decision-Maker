@@ -5,7 +5,9 @@ export default defineConfig({
   timeout: 30_000,
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  // on CI the github reporter turns a failure into an annotation on the run, which is the
+  // only part of a job readable without pulling the whole log
+  reporter: process.env.CI ? [['github'], ['list']] : [['list']],
   use: {
     baseURL: 'http://localhost:5183',
     trace: 'off',
