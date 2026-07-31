@@ -16,7 +16,7 @@ import {
   type TreeNode,
   type TreeNodeData,
 } from '../types';
-import { childPosition, freePosition, isTidyFan, tidyFan } from '../canvas/layout';
+import { childPosition, freePosition, isTidyFan, tidyFan, tidyTree } from '../canvas/layout';
 import { MAX_WEIGHT, MIN_WEIGHT, scoreGrid } from './scoring';
 
 export const STORAGE_KEY = 'decision-maker:v1';
@@ -52,6 +52,8 @@ interface DecisionState {
   selectedNodeId: string | null;
   openGridId: string | null;
   theme: 'system' | 'light' | 'dark';
+  /** the one step back an undoable action leaves behind, offered for a few seconds */
+  undo: { doc: DecisionDoc; label: string; at: number } | null;
 
   setQuestion: (question: string) => void;
   setTheme: (theme: 'system' | 'light' | 'dark') => void;
@@ -66,6 +68,9 @@ interface DecisionState {
   updateNodeData: (nodeId: string, patch: Partial<TreeNodeData>) => void;
   focusNode: (nodeId: string | null) => void;
   deleteNode: (nodeId: string) => void;
+  alignBranches: () => void;
+  undoLast: () => void;
+  dismissUndo: () => void;
   toggleChosen: (nodeId: string) => void;
 
   openGridForNode: (nodeId: string) => string;
@@ -105,15 +110,20 @@ const patchGrid = (doc: DecisionDoc, gridId: string, patch: Partial<Grid>) => {
   return touch(doc, { grids: { ...doc.grids, [gridId]: { ...grid, ...patch } } });
 };
 
-/** node ids of a node and everything hanging below it */
+/**
+ * A node and everything that hangs off it — but a branch fed by a surviving parent as
+ * well stays: it was never only this one's.
+ */
 function subtreeIds(doc: DecisionDoc, rootId: string): Set<string> {
   const ids = new Set([rootId]);
   let added = true;
   while (added) {
     added = false;
-    for (const edge of doc.edges) {
-      if (ids.has(edge.source) && !ids.has(edge.target)) {
-        ids.add(edge.target);
+    for (const node of doc.nodes) {
+      if (ids.has(node.id)) continue;
+      const parents = doc.edges.filter((e) => e.target === node.id).map((e) => e.source);
+      if (parents.length > 0 && parents.every((parent) => ids.has(parent))) {
+        ids.add(node.id);
         added = true;
       }
     }
@@ -161,6 +171,7 @@ export const useDecisionStore = create<DecisionState>()(
       selectedNodeId: null,
       openGridId: null,
       theme: 'system',
+      undo: null,
 
       setQuestion: (question) =>
         set((state) => {
@@ -202,12 +213,12 @@ export const useDecisionStore = create<DecisionState>()(
             (e) => e.source === connection.source && e.target === connection.target,
           );
           if (exists) return state;
-          // a node has one parent — reconnecting moves the branch
-          const edges = state.doc.edges.filter((e) => e.target !== connection.target);
+          // a branch can feed as many others as it needs, and can be fed by several:
+          // two options often lead to the same outcome
           return {
             doc: touch(state.doc, {
               edges: [
-                ...edges,
+                ...state.doc.edges,
                 { id: id(), source: connection.source, target: connection.target, type: 'thought' },
               ],
             }),
@@ -286,11 +297,23 @@ export const useDecisionStore = create<DecisionState>()(
 
       updateNodeData: (nodeId, patch) => set((state) => ({ doc: patchNode(state.doc, nodeId, patch) })),
 
+      alignBranches: () =>
+        set((state) => ({
+          undo: { doc: state.doc, label: 'Branches aligned', at: Date.now() },
+          doc: touch(state.doc, { nodes: tidyTree(state.doc.nodes, state.doc.edges) }),
+        })),
+
+      undoLast: () =>
+        set((state) => (state.undo ? { doc: state.undo.doc, undo: null } : state)),
+
+      dismissUndo: () => set({ undo: null }),
+
       deleteNode: (nodeId) =>
         set((state) => {
           // the decision itself stays — deleting it would leave nothing to hang branches on
           if (state.doc.nodes[0]?.id === nodeId) return state;
           const doomed = subtreeIds(state.doc, nodeId);
+          const label = state.doc.nodes.find((n) => n.id === nodeId)?.data.label;
           const grids = Object.fromEntries(
             Object.entries(state.doc.grids).filter(([, grid]) => !doomed.has(grid.nodeId)),
           );
@@ -303,6 +326,11 @@ export const useDecisionStore = create<DecisionState>()(
             }),
             selectedNodeId: state.selectedNodeId && doomed.has(state.selectedNodeId) ? null : state.selectedNodeId,
             openGridId,
+            undo: {
+              doc: state.doc,
+              label: `Deleted ${label?.trim() || 'a branch'}`,
+              at: Date.now(),
+            },
           };
         }),
 
@@ -516,9 +544,9 @@ export const useDecisionStore = create<DecisionState>()(
         return created;
       },
 
-      newDoc: () => set({ doc: createDoc(), selectedNodeId: null, openGridId: null }),
+      newDoc: () => set({ doc: createDoc(), selectedNodeId: null, openGridId: null, undo: null }),
 
-      loadDoc: (doc) => set({ doc, selectedNodeId: null, openGridId: null }),
+      loadDoc: (doc) => set({ doc, selectedNodeId: null, openGridId: null, undo: null }),
     }),
     {
       name: STORAGE_KEY,

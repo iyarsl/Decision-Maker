@@ -5,6 +5,7 @@ import { Canvas } from './canvas/Canvas';
 import { ThoughtPanel } from './panel/ThoughtPanel';
 import { GridView } from './grid/GridView';
 import { GuideTour } from './guide/GuideTour';
+import { UndoBar } from './chrome/UndoBar';
 import { useDecisionStore } from './store/useDecisionStore';
 
 export default function App() {
@@ -62,6 +63,7 @@ export default function App() {
         </main>
         {gridOpen && <GridView />}
       </ReactFlowProvider>
+      <UndoBar />
       <GuideTour />
     </div>
   );

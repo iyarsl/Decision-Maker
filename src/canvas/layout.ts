@@ -42,6 +42,61 @@ export function tidyFan(parent: TreeNode, siblings: TreeNode[]): TreeNode[] {
   return siblings.map((node) => ({ ...node, position: placed.get(node.id) ?? node.position }));
 }
 
+/**
+ * Lay the whole map out on one grid: a column per depth, siblings stacked a row apart,
+ * every parent centred on the children it leads to. Loose cards keep their own column
+ * of trees below the main one. Sibling order follows where the user already had them.
+ */
+export function tidyTree(nodes: TreeNode[], edges: { source: string; target: string }[]): TreeNode[] {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const order = new Map(nodes.map((node, index) => [node.id, index]));
+  const children = new Map<string, string[]>();
+  const parented = new Set<string>();
+
+  for (const edge of edges) {
+    if (!byId.has(edge.source) || !byId.has(edge.target) || parented.has(edge.target)) continue;
+    children.set(edge.source, [...(children.get(edge.source) ?? []), edge.target]);
+    parented.add(edge.target);
+  }
+
+  for (const kids of children.values()) {
+    kids.sort(
+      (a, b) =>
+        byId.get(a)!.position.y - byId.get(b)!.position.y || order.get(a)! - order.get(b)!,
+    );
+  }
+
+  const placed = new Map<string, { x: number; y: number }>();
+  const seen = new Set<string>();
+  let cursor = 0;
+
+  const place = (id: string, depth: number): number => {
+    seen.add(id);
+    const x = depth * (NODE_WIDTH + COLUMN_GAP);
+    const kids = (children.get(id) ?? []).filter((kid) => !seen.has(kid));
+    if (kids.length === 0) {
+      const y = cursor;
+      cursor += stride;
+      placed.set(id, { x, y });
+      return y;
+    }
+    const ys = kids.map((kid) => place(kid, depth + 1));
+    const y = (ys[0] + ys[ys.length - 1]) / 2;
+    placed.set(id, { x, y });
+    return y;
+  };
+
+  nodes
+    .filter((node) => !parented.has(node.id))
+    .forEach((root, index) => {
+      if (index > 0) cursor += stride;
+      place(root.id, 0);
+    });
+
+  // anything left over sat in a cycle — leave it where it is rather than guessing
+  return nodes.map((node) => (placed.has(node.id) ? { ...node, position: placed.get(node.id)! } : node));
+}
+
 /** nudge a dropped node until it isn't sitting on top of another one */
 export function freePosition(
   position: { x: number; y: number },
