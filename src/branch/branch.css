@@ -35,8 +35,9 @@
 
 .branch-sheet__lead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2) var(--sp-3);
 }
 
 .branch-sheet__back {
@@ -78,6 +79,7 @@
 .branch-scroll {
   overflow: auto;
   padding: var(--sp-5);
+  background: var(--ground-deep);
 }
 
 /* ---------- for and against ---------- */
@@ -94,10 +96,13 @@
   }
 }
 
+/* min-width: 0 all the way down — a textarea's intrinsic width is wide enough to push
+   the whole column past a phone screen otherwise */
 .ledger__side {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  min-width: 0;
   padding-left: var(--sp-4);
   border-left: 2px solid var(--edge);
 }
@@ -148,32 +153,82 @@
   padding: 0;
 }
 
-.ledger__row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: var(--sp-3);
+/* one line is one card: the words first and at full length, the rating under them */
+.ledger__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
 }
 
+.ledger__item:hover {
+  border-color: var(--edge);
+}
+
+.ledger__item:focus-within {
+  border-color: var(--mist-faint);
+  box-shadow: 0 0 0 1px var(--mist-faint);
+}
+
+/* a thought is as long as it is — the box grows instead of cutting it off */
 .ledger__text {
-  min-width: 0;
-  padding: 0.4rem var(--sp-3);
+  width: 100%;
+  min-height: 1.6em;
+  padding: 0;
+  border: none;
+  background: none;
+  resize: none;
+  overflow: hidden;
+  color: var(--clear);
   font-family: var(--reading);
   font-size: var(--step-0);
+  line-height: 1.55;
+}
+
+.ledger__text::placeholder {
+  color: var(--mist-faint);
+}
+
+.ledger__text:focus {
+  outline: none;
+}
+
+.ledger__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  min-width: 0;
 }
 
 .ledger__weight {
   display: flex;
   gap: 3px;
+  flex-shrink: 0;
+}
+
+.ledger__weight-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* five steps, filled up to the weight — a bar you read at a glance, not a slider you drag */
 .ledger__pip {
-  width: 16px;
-  height: 24px;
+  width: 26px;
+  height: 14px;
   padding: 0;
   border: 1px solid var(--edge);
-  border-radius: 2px;
+  border-radius: 3px;
   background: var(--ground-deep);
   transition: background 140ms var(--ease), border-color 140ms var(--ease);
 }
@@ -198,35 +253,159 @@
   border-color: var(--risk);
 }
 
-/* sits in the list so it lines up with the weights below it, and takes no row of its own */
-.ledger__scale-caption {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: var(--sp-3);
+/* quiet until the line is in play, so a column of them doesn't read as a column of × */
+.ledger__remove {
+  flex-shrink: 0;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-sm);
   color: var(--mist-faint);
   font-family: var(--data);
   font-size: var(--step--2);
-  letter-spacing: 0.12em;
+  opacity: 0;
+  transition: opacity 160ms var(--ease), color 160ms var(--ease);
 }
 
-.ledger__scale-caption span {
-  grid-column: 2;
-  text-align: center;
-}
-
-.ledger__remove {
-  padding: 0 var(--sp-1);
-  color: var(--mist-faint);
-  font-size: var(--step-1);
-  line-height: 1;
+.ledger__item:hover .ledger__remove,
+.ledger__item:focus-within .ledger__remove,
+.ledger__remove:focus-visible {
+  opacity: 1;
 }
 
 .ledger__remove:hover {
   color: var(--risk);
 }
 
+/* ---------- the answer that comes back at a line ---------- */
+
+/* nested under what it answers, and in the other side's colour: a con under a pro reads
+   as an argument against that pro, not as another entry in the against column */
+.counters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+  margin-left: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 2px solid var(--edge);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--ground-deep);
+}
+
+.counter--con {
+  border-left-color: var(--risk);
+}
+
+.counter--pro {
+  border-left-color: var(--gain);
+}
+
+.counter__text {
+  width: 100%;
+  min-height: 1.5em;
+  padding: 0;
+  border: none;
+  background: none;
+  resize: none;
+  overflow: hidden;
+  color: var(--mist);
+  font-family: var(--reading);
+  font-size: var(--step--1);
+  line-height: 1.5;
+}
+
+.counter__text::placeholder {
+  color: var(--mist-faint);
+}
+
+.counter__text:focus {
+  outline: none;
+  color: var(--clear);
+}
+
+.counter__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  min-width: 0;
+}
+
+.counter .ledger__pip {
+  width: 18px;
+  height: 10px;
+}
+
+.counter--con .ledger__pip.is-on {
+  background: var(--risk);
+  border-color: var(--risk);
+}
+
+.counter--pro .ledger__pip.is-on {
+  background: var(--gain);
+  border-color: var(--gain);
+}
+
+/* quiet, but never hidden: answering a line is half the point of writing one */
+.ledger__counter-add {
+  align-self: flex-start;
+  padding: 2px var(--sp-2);
+  margin-left: var(--sp-4);
+  border-radius: var(--r-sm);
+  color: var(--mist-faint);
+  font-family: var(--data);
+  font-size: var(--step--2);
+  transition: color 160ms var(--ease), background 160ms var(--ease);
+}
+
+.ledger__item:hover .ledger__counter-add,
+.ledger__item:focus-within .ledger__counter-add {
+  color: var(--mist);
+}
+
+.ledger__counter-add:hover {
+  color: var(--clear);
+  background: var(--ground-deep);
+}
+
+/* an answered line is smaller than it looked: say so where the rating is */
+.ledger__item:has(.counter) .ledger__weight-label {
+  color: var(--mist);
+}
+
+/* the end of the list is an invitation, not a button parked under it */
 .ledger__add {
-  align-self: start;
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px dashed var(--edge);
+  border-radius: var(--r-md);
+  color: var(--mist);
+  font-family: var(--data);
+  font-size: var(--step--1);
+  text-align: left;
+  transition: border-color 160ms var(--ease), color 160ms var(--ease), background 160ms var(--ease);
+}
+
+.ledger__add:hover {
+  border-color: var(--mist-faint);
+  color: var(--clear);
+  background: var(--ground-deep);
+}
+
+.ledger__side--pro .ledger__add:hover {
+  border-color: var(--gain);
+}
+
+.ledger__side--con .ledger__add:hover {
+  border-color: var(--risk);
 }
 
 /* ---------- what it comes to ---------- */
@@ -297,5 +476,25 @@
   .branch-scroll,
   .branch-sheet__foot {
     padding-inline: var(--sp-4);
+  }
+}
+
+@media (max-width: 520px) {
+  .ledger__pip {
+    width: 20px;
+  }
+
+  /* the rating reads on its own line rather than trailing off into an ellipsis */
+  .ledger__weight-label {
+    flex-basis: 100%;
+    white-space: normal;
+  }
+
+  .counter {
+    margin-left: var(--sp-2);
+  }
+
+  .ledger__counter-add {
+    margin-left: var(--sp-2);
   }
 }

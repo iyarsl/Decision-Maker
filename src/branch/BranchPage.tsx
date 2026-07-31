@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDecisionStore } from '../store/useDecisionStore';
-import { balanceOf, MAX_WEIGHT, MIN_WEIGHT, WEIGHT_LABEL } from '../store/scoring';
-import { KIND_LABEL, type LedgerItem, type Side } from '../types';
+import { balanceOf, MAX_WEIGHT, MIN_WEIGHT, statedWeight, WEIGHT_LABEL, weightOf } from '../store/scoring';
+import { KIND_LABEL, type Counter, type LedgerItem, type Side } from '../types';
 import './branch.css';
 
 const STEPS = Array.from({ length: MAX_WEIGHT - MIN_WEIGHT + 1 }, (_, i) => MIN_WEIGHT + i);
@@ -94,12 +94,6 @@ export function BranchPage() {
                     <p className="ledger__empty">{empty}</p>
                   ) : (
                     <ul className="ledger__list">
-                      {/* one caption for the page, over the column of weights it explains */}
-                      {index === 0 && (
-                        <li className="ledger__scale-caption" aria-hidden="true">
-                          <span>optional · minor · · · decisive</span>
-                        </li>
-                      )}
                       {rows.map((item, row) => (
                         <LedgerRow
                           key={item.id}
@@ -113,7 +107,7 @@ export function BranchPage() {
                   )}
 
                   <button
-                    className="btn ledger__add"
+                    className="ledger__add"
                     data-guide={side === 'pro' ? 'pro' : undefined}
                     onClick={() => setFreshId(addLedgerItem(nodeId, side))}
                   >
@@ -174,55 +168,186 @@ function LedgerRow({
 }) {
   const updateLedgerItem = useDecisionStore((s) => s.updateLedgerItem);
   const removeLedgerItem = useDecisionStore((s) => s.removeLedgerItem);
-  const textRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (autoFocus) textRef.current?.focus();
-  }, [autoFocus]);
+  const addCounter = useDecisionStore((s) => s.addCounter);
+  const [freshCounter, setFreshCounter] = useState<string | null>(null);
+  const textRef = useAutoHeight(item.text, autoFocus);
 
   const name = item.text.trim();
+  const counters = item.counters ?? [];
+  const counted = weightOf(item);
+  const answered = counted < statedWeight(item);
 
   return (
-    <li className="ledger__row">
-      <input
+    <li className="ledger__item">
+      <textarea
         ref={textRef}
-        className="field ledger__text"
+        className="ledger__text"
         dir="auto"
+        rows={1}
         value={item.text}
         placeholder={item.side === 'pro' ? 'Something for it' : 'Something against it'}
         aria-label={item.side === 'pro' ? 'A pro' : 'A con'}
         onChange={(event) => updateLedgerItem(nodeId, item.id, { text: event.target.value })}
       />
 
-      <div
-        className={item.weight === undefined ? 'ledger__weight is-unrated' : 'ledger__weight'}
-        role="radiogroup"
-        aria-label={`How much ${name || 'this'} counts — optional`}
-        data-guide={anchorWeight ? 'weight' : undefined}
-      >
-        {STEPS.map((step) => (
-          <button
-            key={step}
-            role="radio"
-            aria-checked={item.weight === step}
-            aria-label={String(step)}
-            title={item.weight === step ? `${WEIGHT_LABEL[step]} — click to leave it unrated` : WEIGHT_LABEL[step]}
-            className={item.weight !== undefined && step <= item.weight ? 'ledger__pip is-on' : 'ledger__pip'}
-            // clicking the step it is already on takes the rating back off
-            onClick={() =>
-              updateLedgerItem(nodeId, item.id, { weight: item.weight === step ? undefined : step })
-            }
-          />
-        ))}
+      <div className="ledger__meta">
+        <div
+          className={item.weight === undefined ? 'ledger__weight is-unrated' : 'ledger__weight'}
+          role="radiogroup"
+          aria-label={`How much ${name || 'this'} counts — optional`}
+          data-guide={anchorWeight ? 'weight' : undefined}
+        >
+          {STEPS.map((step) => (
+            <button
+              key={step}
+              role="radio"
+              aria-checked={item.weight === step}
+              aria-label={String(step)}
+              title={
+                item.weight === step ? `${WEIGHT_LABEL[step]} — click to leave it unrated` : WEIGHT_LABEL[step]
+              }
+              className={item.weight !== undefined && step <= item.weight ? 'ledger__pip is-on' : 'ledger__pip'}
+              // clicking the step it is already on takes the rating back off
+              onClick={() =>
+                updateLedgerItem(nodeId, item.id, { weight: item.weight === step ? undefined : step })
+              }
+            />
+          ))}
+        </div>
+
+        <span className="ledger__weight-label data">
+          {answered
+            ? `Answered — counts ${counted}`
+            : item.weight === undefined
+              ? 'Rate it — optional'
+              : WEIGHT_LABEL[item.weight]}
+        </span>
+
+        <button
+          className="ledger__remove"
+          aria-label={`Remove ${name || 'this line'}`}
+          title="Remove this line"
+          onClick={() => removeLedgerItem(nodeId, item.id)}
+        >
+          Remove
+        </button>
       </div>
 
+      {counters.length > 0 && (
+        <ul className="counters">
+          {counters.map((counter) => (
+            <CounterRow
+              key={counter.id}
+              nodeId={nodeId}
+              itemId={item.id}
+              counter={counter}
+              side={item.side}
+              autoFocus={counter.id === freshCounter}
+            />
+          ))}
+        </ul>
+      )}
+
       <button
-        className="ledger__remove"
-        aria-label={`Remove ${name || 'this line'}`}
-        onClick={() => removeLedgerItem(nodeId, item.id)}
+        className="ledger__counter-add"
+        onClick={() => setFreshCounter(addCounter(nodeId, item.id))}
+        title={
+          item.side === 'pro'
+            ? 'The con that comes straight back at this pro'
+            : 'The pro that comes straight back at this con'
+        }
       >
-        ×
+        {item.side === 'pro' ? '↩ But…' : '↩ Even so…'}
       </button>
     </li>
   );
+}
+
+/** the answer to a line: written where it belongs, and taken off what that line counts */
+function CounterRow({
+  nodeId,
+  itemId,
+  counter,
+  side,
+  autoFocus,
+}: {
+  nodeId: string;
+  itemId: string;
+  counter: Counter;
+  side: Side;
+  autoFocus: boolean;
+}) {
+  const updateCounter = useDecisionStore((s) => s.updateCounter);
+  const removeCounter = useDecisionStore((s) => s.removeCounter);
+  const textRef = useAutoHeight(counter.text, autoFocus);
+  const name = counter.text.trim();
+
+  return (
+    <li className={`counter counter--${side === 'pro' ? 'con' : 'pro'}`}>
+      <textarea
+        ref={textRef}
+        className="counter__text"
+        dir="auto"
+        rows={1}
+        value={counter.text}
+        placeholder={side === 'pro' ? 'But…' : 'Even so…'}
+        aria-label={side === 'pro' ? 'A con answering this pro' : 'A pro answering this con'}
+        onChange={(event) => updateCounter(nodeId, itemId, counter.id, { text: event.target.value })}
+      />
+
+      <div className="counter__meta">
+        <div
+          className={counter.weight === undefined ? 'ledger__weight is-unrated' : 'ledger__weight'}
+          role="radiogroup"
+          aria-label={`How much ${name || 'this answer'} takes off — optional`}
+        >
+          {STEPS.map((step) => (
+            <button
+              key={step}
+              role="radio"
+              aria-checked={counter.weight === step}
+              aria-label={String(step)}
+              title={WEIGHT_LABEL[step]}
+              className={
+                counter.weight !== undefined && step <= counter.weight ? 'ledger__pip is-on' : 'ledger__pip'
+              }
+              onClick={() =>
+                updateCounter(nodeId, itemId, counter.id, {
+                  weight: counter.weight === step ? undefined : step,
+                })
+              }
+            />
+          ))}
+        </div>
+
+        <span className="ledger__weight-label data">takes {statedWeight(counter)} off</span>
+
+        <button
+          className="ledger__remove"
+          aria-label={`Remove ${name || 'this answer'}`}
+          onClick={() => removeCounter(nodeId, itemId, counter.id)}
+        >
+          Remove
+        </button>
+      </div>
+    </li>
+  );
+}
+
+/** a field that is as tall as its text, so nothing written is ever out of sight */
+function useAutoHeight(text: string, autoFocus: boolean) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus();
+  }, [autoFocus]);
+
+  useEffect(() => {
+    const field = ref.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight}px`;
+  }, [text]);
+
+  return ref;
 }
