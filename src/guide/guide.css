@@ -1,0 +1,189 @@
+/* The walkthrough sits over everything but blocks nothing — you follow it by using the
+   real interface, so only the card itself takes pointer events. */
+
+:root {
+  --guide-veil: rgba(14, 20, 24, 0.58);
+  --guide-ring: rgba(232, 238, 240, 0.5);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --guide-veil: rgba(226, 232, 234, 0.62);
+    --guide-ring: rgba(30, 44, 52, 0.35);
+  }
+}
+
+:root[data-theme='dark'] {
+  --guide-veil: rgba(14, 20, 24, 0.58);
+  --guide-ring: rgba(232, 238, 240, 0.5);
+}
+
+:root[data-theme='light'] {
+  --guide-veil: rgba(226, 232, 234, 0.62);
+  --guide-ring: rgba(30, 44, 52, 0.35);
+}
+
+.guide {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.guide__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--guide-veil);
+}
+
+/* the fog lifts around the control this step is about */
+.guide__halo {
+  position: absolute;
+  border-radius: var(--r-md);
+  border: 1px solid var(--guide-ring);
+  box-shadow: 0 0 0 9999px var(--guide-veil);
+  transition: top 220ms var(--ease-settle), left 220ms var(--ease-settle),
+    width 220ms var(--ease-settle), height 220ms var(--ease-settle);
+}
+
+.guide__card {
+  position: absolute;
+  width: 320px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-panel);
+  transition: top 220ms var(--ease-settle), left 220ms var(--ease-settle);
+}
+
+.guide__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.guide__close {
+  color: var(--mist-faint);
+  font-family: var(--data);
+  font-size: var(--step--2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.guide__close:hover {
+  color: var(--clear);
+}
+
+.guide__title {
+  font-family: var(--display);
+  font-size: var(--step-1);
+  font-weight: 600;
+  font-stretch: 92%;
+  line-height: 1.2;
+  color: var(--clear);
+}
+
+.guide__body {
+  font-family: var(--reading);
+  font-size: var(--step--1);
+  line-height: 1.55;
+  color: var(--mist);
+}
+
+.guide__check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--step--2);
+  color: var(--mist-faint);
+}
+
+.guide__check::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+
+.guide__check.is-done {
+  color: var(--gain);
+}
+
+.guide__check.is-done::before {
+  background: var(--gain);
+  border-color: var(--gain);
+}
+
+.guide__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--edge-soft);
+}
+
+.guide__ticks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide__tick {
+  display: block;
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--edge);
+  transition: background 160ms var(--ease), width 160ms var(--ease);
+}
+
+.guide__tick:hover {
+  background: var(--mist-faint);
+}
+
+.guide__tick.is-past {
+  background: var(--mist-faint);
+}
+
+.guide__tick.is-on {
+  width: 22px;
+  background: var(--clear);
+}
+
+/* the step is satisfied — green, never amber: amber belongs to the leaning path alone */
+.guide__go {
+  border-color: var(--gain);
+  color: var(--gain);
+}
+
+.guide__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guide__halo,
+  .guide__card {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .guide__card {
+    left: var(--sp-3) !important;
+    right: var(--sp-3);
+    width: auto;
+  }
+}
