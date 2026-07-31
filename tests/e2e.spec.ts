@@ -132,6 +132,14 @@ test('branches can be deleted, the decision itself cannot', async ({ page }) => 
   await expect(page.locator('.node-card')).toHaveCount(1);
   await expect(page.locator('.panel')).toHaveCount(0);
 
+  // a branch just added sits with the caret in its empty name — Delete still means the branch
+  await nodeCard(page, QUESTION).first().click();
+  await page.getByRole('button', { name: '+ Branch from here' }).click();
+  await expect(page.locator('.node-card')).toHaveCount(2);
+  await expect(page.getByLabel('Name this branch')).toBeFocused();
+  await page.keyboard.press('Delete');
+  await expect(page.locator('.node-card')).toHaveCount(1);
+
   // typing in a field keeps the key for the text
   await addBranch(page, QUESTION, 'Wait six months');
   await nodeCard(page, 'Wait six months').click();

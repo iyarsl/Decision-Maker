@@ -36,7 +36,11 @@ export default function App() {
       if (event.key !== 'Delete' && event.key !== 'Backspace') return;
       if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
-      if (target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName ?? '')) {
+      if (target?.isContentEditable || target?.tagName === 'SELECT') return;
+      // a field only claims the key while it has text to delete — a branch you just added
+      // sits with the caret in an empty name, and Delete there means the branch
+      const field = target as HTMLInputElement | HTMLTextAreaElement | null;
+      if ((target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') && field?.value.length) {
         return;
       }
       const { selectedNodeId, openGridId, doc, deleteNode } = useDecisionStore.getState();
