@@ -27,6 +27,8 @@ import { migrateDoc } from './io';
 
 export const STORAGE_KEY = 'decision-maker:v1';
 
+export type Mode = 'edit' | 'decide';
+
 const id = () => nanoid(8);
 const now = () => new Date().toISOString();
 
@@ -58,11 +60,14 @@ interface DecisionState {
   /** the branch whose own case is open, full screen */
   weighNodeId: string | null;
   theme: 'system' | 'light' | 'dark';
+  /** 'edit' builds the decision; 'decide' puts every editing affordance away to read it */
+  mode: Mode;
   /** the one step back an undoable action leaves behind, offered for a few seconds */
   undo: { doc: DecisionDoc; label: string; at: number } | null;
 
   setQuestion: (question: string) => void;
   setTheme: (theme: 'system' | 'light' | 'dark') => void;
+  setMode: (mode: Mode) => void;
 
   onNodesChange: (changes: NodeChange<TreeNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<TreeEdge>[]) => void;
@@ -195,6 +200,7 @@ export const useDecisionStore = create<DecisionState>()(
       compareNodeId: null,
       weighNodeId: null,
       theme: 'system',
+      mode: 'edit',
       undo: null,
 
       setQuestion: (question) =>
@@ -209,6 +215,12 @@ export const useDecisionStore = create<DecisionState>()(
         }),
 
       setTheme: (theme) => set({ theme }),
+
+      // deciding starts on the map, not on whatever editing surface was left open
+      setMode: (mode) =>
+        set(mode === 'decide'
+          ? { mode, selectedNodeId: null, weighNodeId: null, compareNodeId: null }
+          : { mode }),
 
       onNodesChange: (changes) =>
         set((state) => {
@@ -497,6 +509,8 @@ export const useDecisionStore = create<DecisionState>()(
           nodes: state.doc.nodes.map((node) => ({ ...node, selected: false, dragging: false })),
         },
         theme: state.theme,
+        // a finished decision is still finished when you open it again
+        mode: state.mode,
       }),
     },
   ),

@@ -32,6 +32,7 @@ export function Canvas() {
   const addLooseNode = useDecisionStore((s) => s.addLooseNode);
   const selectedNodeId = useDecisionStore((s) => s.selectedNodeId);
   const alignBranches = useDecisionStore((s) => s.alignBranches);
+  const deciding = useDecisionStore((s) => s.mode === 'decide');
   const { screenToFlowPosition, flowToScreenPosition, getNode, getViewport, setViewport, fitView } =
     useReactFlow<TreeNode>();
 
@@ -40,9 +41,24 @@ export function Canvas() {
   const dragged = useRef(false);
 
   const onNodeDragStart = useCallback(() => {
+    dragged.current = false;
+  }, []);
+
+  // a press that has actually moved the card: only now is it a drag, and only now does the
+  // panel close. Moving a card leaves no undo — putting it back is the same gesture.
+  const onNodeDrag = useCallback(() => {
+    if (dragged.current) return;
     dragged.current = true;
     focusNode(null);
   }, [focusNode]);
+
+  // the click that ends a drag is swallowed above; clear the flag after it, or the next
+  // genuine click on that card would be swallowed too
+  const onNodeDragStop = useCallback(() => {
+    requestAnimationFrame(() => {
+      dragged.current = false;
+    });
+  }, []);
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: TreeNode) => {
@@ -88,6 +104,7 @@ export function Canvas() {
 
   const onPaneDoubleClick = useCallback(
     (event: React.MouseEvent) => {
+      if (deciding) return;
       // only empty canvas makes a card — double-clicking a card, the minimap or the
       // controls bubbles up here too, and used to drop a stray node behind them
       const onChrome = (event.target as HTMLElement).closest(
@@ -97,18 +114,18 @@ export function Canvas() {
       const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       addLooseNode({ x: position.x - 126, y: position.y - 58 });
     },
-    [addLooseNode, screenToFlowPosition],
+    [addLooseNode, deciding, screenToFlowPosition],
   );
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (!selectedNodeId) return;
+      if (deciding || !selectedNodeId) return;
       if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         addChild(selectedNodeId);
       }
     },
-    [addChild, selectedNodeId],
+    [addChild, deciding, selectedNodeId],
   );
 
   const minimapColor = useMemo(
@@ -122,7 +139,7 @@ export function Canvas() {
   const selectedCount = nodes.filter((node) => node.selected).length;
 
   return (
-    <div className="canvas" onKeyDown={onKeyDown}>
+    <div className={deciding ? 'canvas is-deciding' : 'canvas'} onKeyDown={onKeyDown}>
       <ReactFlow<TreeNode>
         nodes={nodes}
         edges={edges}
@@ -133,15 +150,20 @@ export function Canvas() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onReconnect={reconnect}
-        edgesReconnectable
+        // nothing about the map is movable while deciding: it is there to be read
+        nodesDraggable={!deciding}
+        nodesConnectable={!deciding}
+        edgesReconnectable={!deciding}
         // an end dropped on empty canvas snaps back; detaching is Delete on a selected connection
         reconnectRadius={24}
         onSelectionChange={onSelectionChange}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
+        onNodeDrag={onNodeDrag}
+        onNodeDragStop={onNodeDragStop}
         onDoubleClick={onPaneDoubleClick}
         onPaneClick={() => selectNode(null)}
-        deleteKeyCode={['Delete', 'Backspace']}
+        deleteKeyCode={deciding ? null : ['Delete', 'Backspace']}
         multiSelectionKeyCode={['Control', 'Meta', 'Shift']}
         selectionKeyCode={['Control', 'Meta', 'Shift']}
         panOnScroll
@@ -163,18 +185,20 @@ export function Canvas() {
           maskColor="color-mix(in srgb, var(--ground) 76%, transparent)"
           position="bottom-left"
         />
-        <Panel position="top-right" className="canvas-tools">
-          <button
-            className="btn"
-            onClick={() => {
-              alignBranches();
-              window.requestAnimationFrame(() => fitView({ padding: 0.25, duration: 320, maxZoom: 1 }));
-            }}
-            title="Put every branch back on one grid, centred under what it came from"
-          >
-            Align branches
-          </button>
-        </Panel>
+        {!deciding && (
+          <Panel position="top-right" className="canvas-tools">
+            <button
+              className="btn"
+              onClick={() => {
+                alignBranches();
+                window.requestAnimationFrame(() => fitView({ padding: 0.25, duration: 320, maxZoom: 1 }));
+              }}
+              title="Put every branch back on one grid, centred under what it came from"
+            >
+              Align branches
+            </button>
+          </Panel>
+        )}
 
         {/* only what is true right now — the controls teach themselves, the Clarity meter
             already counts what is unwritten, and the walkthrough covers the rest */}

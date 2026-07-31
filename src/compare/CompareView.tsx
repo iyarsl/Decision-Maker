@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useDecisionStore, childrenOf } from '../store/useDecisionStore';
-import { compareBranches, statedWeight, weightOf, type Standing } from '../store/scoring';
-import type { LedgerItem } from '../types';
+import { compareBranches, type Standing } from '../store/scoring';
+import { LedgerReadout } from '../branch/LedgerReadout';
 import './compare.css';
 
 /**
@@ -19,6 +19,8 @@ export function CompareView() {
   const doc = useDecisionStore((s) => s.doc);
   const closeCompare = useDecisionStore((s) => s.closeCompare);
   const openWeigh = useDecisionStore((s) => s.openWeigh);
+  const selectNode = useDecisionStore((s) => s.selectNode);
+  const deciding = useDecisionStore((s) => s.mode === 'decide');
 
   const sheetRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -34,10 +36,12 @@ export function CompareView() {
 
   if (!nodeId) return null;
 
-  // the list is what you came here to fix, so go straight to it
+  // the list is what you came here to fix, so go straight to it — unless there is nothing
+  // to fix, in which case the card's own reading is the right place to land
   const openBranch = (branchId: string) => {
     closeCompare();
-    openWeigh(branchId);
+    if (deciding) selectNode(branchId);
+    else openWeigh(branchId);
   };
 
   return (
@@ -73,6 +77,7 @@ export function CompareView() {
                 standing={standing}
                 span={span}
                 leads={result.leader?.nodeId === standing.nodeId && !result.tied && result.weighed > 0}
+                openLabel={deciding ? 'Read this branch' : 'Weigh this branch'}
                 onOpen={() => openBranch(standing.nodeId)}
               />
             ))}
@@ -140,11 +145,13 @@ function Column({
   standing,
   span,
   leads,
+  openLabel,
   onOpen,
 }: {
   standing: Standing;
   span: number;
   leads: boolean;
+  openLabel: string;
   onOpen: () => void;
 }) {
   const { balance } = standing;
@@ -174,57 +181,12 @@ function Column({
       {balance.count === 0 ? (
         <p className="panel__help compare-col__empty">Nothing listed for this one yet.</p>
       ) : (
-        <>
-          <Side items={balance.pros} side="pro" total={balance.forTotal} />
-          <Side items={balance.cons} side="con" total={balance.againstTotal} />
-        </>
+        <LedgerReadout balance={balance} />
       )}
 
       <button className="btn btn--quiet compare-col__open" onClick={onOpen}>
-        Weigh this branch
+        {openLabel}
       </button>
     </article>
-  );
-}
-
-function Side({ items, side, total }: { items: LedgerItem[]; side: 'pro' | 'con'; total: number }) {
-  if (items.length === 0) return null;
-  return (
-    <div className={`compare-side compare-side--${side}`}>
-      <p className="eyebrow compare-side__head">
-        {side === 'pro' ? 'For' : 'Against'} <span className="data">{total}</span>
-      </p>
-      <ul className="compare-side__list">
-        {items.map((item) => {
-          const answers = (item.counters ?? []).filter((counter) => counter.text.trim());
-          const counted = weightOf(item);
-          return (
-            <li key={item.id} className="compare-side__item">
-              <p className="compare-side__line">
-                <span className="compare-side__text" dir="auto">
-                  <bdi>{item.text}</bdi>
-                </span>
-                {/* an unrated line with nothing against it carries no number: it counts as
-                    one, and "×1" would claim the user decided that */}
-                {(item.weight !== undefined || answers.length > 0) && (
-                  <span className="compare-side__weight data" aria-label={`counts ${counted}`}>
-                    ×{counted}
-                  </span>
-                )}
-              </p>
-
-              {answers.map((counter) => (
-                <p key={counter.id} className={`compare-side__counter compare-side__counter--${side}`}>
-                  <span dir="auto">
-                    <bdi>{counter.text}</bdi>
-                  </span>
-                  <span className="compare-side__weight data">−{statedWeight(counter)}</span>
-                </p>
-              ))}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
   );
 }

@@ -18,6 +18,7 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
   const isRoot = useDecisionStore((s) => s.doc.nodes[0]?.id === id);
   const solo = useDecisionStore((s) => s.selectedNodeId === id);
   const branchCount = useDecisionStore((s) => s.doc.edges.filter((e) => e.source === id).length);
+  const deciding = useDecisionStore((s) => s.mode === 'decide');
 
   const resolved = isResolved(data);
   const balance = balanceOf(data);
@@ -29,32 +30,50 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
           leaves it out rather than stacking three sets of buttons on the canvas */}
       <NodeToolbar isVisible={solo} position={Position.Top} offset={10}>
         <div className="node-tools">
-          <button className="btn" onClick={() => addChild(id)} title="Add a branch from here">
-            + Branch
-          </button>
-          <button className="btn" onClick={() => openWeigh(id)} title="What's for this branch, what's against">
-            Weigh
-          </button>
-          <button
-            className="btn"
-            disabled={branchCount < 2}
-            onClick={() => openCompare(id)}
-            title={
-              branchCount < 2
-                ? 'Compare needs at least two branches from this card'
-                : 'Put the branches from here side by side'
-            }
-          >
-            Compare
-          </button>
+          {/* deciding leaves one action standing: marking the path you are taking is the
+              decision itself, not a change to the reasoning behind it */}
+          {!deciding && (
+            <button className="btn" onClick={() => addChild(id)} title="Add a branch from here">
+              + Branch
+            </button>
+          )}
+          {!deciding && (
+            <>
+              <button
+                className="btn"
+                onClick={() => openWeigh(id)}
+                title="What's for this branch, what's against"
+              >
+                Weigh
+              </button>
+              <button
+                className="btn"
+                disabled={branchCount < 2}
+                onClick={() => openCompare(id)}
+                title={
+                  branchCount < 2
+                    ? 'Compare needs at least two branches from this card'
+                    : 'Put the branches from here side by side'
+                }
+              >
+                Compare
+              </button>
+            </>
+          )}
           <button
             className={data.chosen ? 'btn btn--signal' : 'btn'}
             onClick={() => toggleChosen(id)}
-            title="Mark the path you're leaning toward"
+            title={deciding ? "Mark the path you're taking" : "Mark the path you're leaning toward"}
           >
-            {data.chosen ? 'Leaning' : 'Lean here'}
+            {deciding
+              ? data.chosen
+                ? 'Taking this'
+                : 'Take this path'
+              : data.chosen
+                ? 'Leaning'
+                : 'Lean here'}
           </button>
-          {!isRoot && (
+          {!isRoot && !deciding && (
             <button className="btn btn--quiet" onClick={() => deleteNode(id)} title="Delete this branch">
               Delete
             </button>

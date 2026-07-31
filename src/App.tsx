@@ -34,6 +34,25 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  // Ctrl/Cmd+Z takes back the last step the app kept — a move, a delete, an align. Inside
+  // a field the key belongs to the text, where the browser's own undo is better than ours.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'z' && event.key !== 'Z') return;
+      if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.isContentEditable || target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') {
+        return;
+      }
+      const { undo, undoLast } = useDecisionStore.getState();
+      if (!undo) return;
+      event.preventDefault();
+      undoLast();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   // Delete removes the branch you are looking at, panel open or not — but never while
   // the caret is in a field, where the key belongs to the text
   useEffect(() => {
@@ -48,7 +67,9 @@ export default function App() {
       if ((target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') && field?.value.length) {
         return;
       }
-      const { selectedNodeId, compareNodeId, weighNodeId, doc, deleteNode } = useDecisionStore.getState();
+      const { selectedNodeId, compareNodeId, weighNodeId, mode, doc, deleteNode } =
+        useDecisionStore.getState();
+      if (mode === 'decide') return;
       if (compareNodeId || weighNodeId || !selectedNodeId || doc.nodes[0]?.id === selectedNodeId) return;
       event.preventDefault();
       deleteNode(selectedNodeId);

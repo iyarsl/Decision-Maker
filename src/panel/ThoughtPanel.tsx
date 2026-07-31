@@ -3,6 +3,7 @@ import { useDecisionStore } from '../store/useDecisionStore';
 import { isResolved, KIND_LABEL, type Feeling, type NodeKind } from '../types';
 import { balanceOf } from '../store/scoring';
 import { BalanceBar } from '../branch/BalanceBar';
+import { BranchBrief } from './BranchBrief';
 import { FEELINGS } from './feelings';
 import './panel.css';
 
@@ -19,6 +20,7 @@ export function ThoughtPanel() {
   const selectNode = useDecisionStore((s) => s.selectNode);
   const deleteNode = useDecisionStore((s) => s.deleteNode);
   const isRoot = useDecisionStore((s) => s.doc.nodes[0]?.id === s.selectedNodeId);
+  const deciding = useDecisionStore((s) => s.mode === 'decide');
   // comparing is about an intersection: it needs at least two branches to hold apart
   const branchCount = useDecisionStore(
     (s) => s.doc.edges.filter((e) => e.source === s.selectedNodeId).length,
@@ -30,6 +32,8 @@ export function ThoughtPanel() {
   }, [node]);
 
   if (!node || !nodeId) return null;
+  // deciding reads the branch instead of opening a form over it
+  if (deciding) return <BranchBrief nodeId={nodeId} data={node.data} />;
 
   const { data } = node;
   const resolved = isResolved(data);

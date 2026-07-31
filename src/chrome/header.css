@@ -56,6 +56,10 @@
   gap: var(--sp-2);
 }
 
+.header__mode {
+  flex-shrink: 0;
+}
+
 .header__error {
   position: absolute;
   left: var(--sp-5);

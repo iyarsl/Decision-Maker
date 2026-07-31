@@ -324,3 +324,33 @@ select {
   border-color: var(--focus);
   box-shadow: var(--shadow-lift), 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent);
 }
+
+/* ---------- segmented control ---------- */
+
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ground-deep);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-md);
+}
+
+.segmented__item {
+  flex: 1;
+  padding: 0.35rem 0.4rem;
+  border-radius: calc(var(--r-md) - 3px);
+  font-family: var(--data);
+  font-size: var(--step--2);
+  color: var(--mist);
+  transition: background 160ms var(--ease), color 160ms var(--ease);
+}
+
+.segmented__item:hover {
+  color: var(--clear);
+}
+
+.segmented__item.is-on {
+  background: var(--panel-raised);
+  color: var(--clear);
+}

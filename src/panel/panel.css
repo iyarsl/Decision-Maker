@@ -109,6 +109,43 @@
   background: color-mix(in srgb, var(--ground-deep) 60%, transparent);
 }
 
+/* ---------- reading a branch while deciding ---------- */
+
+.brief {
+  gap: var(--sp-3);
+}
+
+.brief__label {
+  font-family: var(--display);
+  font-size: var(--step-2);
+  font-weight: 600;
+  font-stretch: 88%;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--clear);
+}
+
+.brief__note {
+  font-family: var(--reading);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  color: var(--mist);
+  white-space: pre-wrap;
+}
+
+.brief__aside {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+}
+
+.brief__aside strong {
+  color: var(--mist);
+  font-weight: 500;
+}
+
 /* ---------- the way through to the branch's own page ---------- */
 
 .panel__weigh {
@@ -127,36 +164,6 @@
 .panel__weigh:hover {
   border-color: var(--mist-faint);
   background: var(--panel-raised);
-}
-
-/* ---------- segmented control ---------- */
-
-.segmented {
-  display: flex;
-  gap: 2px;
-  padding: 2px;
-  background: var(--ground-deep);
-  border: 1px solid var(--edge);
-  border-radius: var(--r-md);
-}
-
-.segmented__item {
-  flex: 1;
-  padding: 0.35rem 0.4rem;
-  border-radius: calc(var(--r-md) - 3px);
-  font-family: var(--data);
-  font-size: var(--step--2);
-  color: var(--mist);
-  transition: background 160ms var(--ease), color 160ms var(--ease);
-}
-
-.segmented__item:hover {
-  color: var(--clear);
-}
-
-.segmented__item.is-on {
-  background: var(--panel-raised);
-  color: var(--clear);
 }
 
 /* ---------- gut read ---------- */

@@ -113,6 +113,16 @@
   max-width: 60%;
 }
 
+/* ---------- deciding: the map, with the editing put away ---------- */
+
+.canvas.is-deciding .react-flow__handle {
+  display: none;
+}
+
+.canvas.is-deciding .node-card {
+  cursor: pointer;
+}
+
 /* ---------- the fog: unwritten branches stay faint ---------- */
 
 .node-card.is-unresolved {

@@ -12,6 +12,9 @@ export function Header() {
   const newDoc = useDecisionStore((s) => s.newDoc);
   const theme = useDecisionStore((s) => s.theme);
   const setTheme = useDecisionStore((s) => s.setTheme);
+  const mode = useDecisionStore((s) => s.mode);
+  const setMode = useDecisionStore((s) => s.setMode);
+  const deciding = mode === 'decide';
   const nodes = useDecisionStore((s) => s.doc.nodes);
   const clarity = useMemo(() => selectClarity(nodes), [nodes]);
   const startGuide = useGuide((s) => s.start);
@@ -41,6 +44,7 @@ export function Header() {
           value={question}
           placeholder="What are you deciding?"
           aria-label="What are you deciding?"
+          readOnly={deciding}
           onChange={(event) => setQuestion(event.target.value)}
         />
       </div>
@@ -58,10 +62,33 @@ export function Header() {
           </div>
         </div>
 
-        <div className="header__actions" data-guide="save">
-          <button className="btn btn--quiet" onClick={startGuide} title="Walk through how this works">
-            Guide
+        {/* the whole app answers to this: building the decision, or reading the one you built */}
+        <div className="segmented header__mode" role="group" aria-label="Mode">
+          <button
+            className={deciding ? 'segmented__item' : 'segmented__item is-on'}
+            aria-pressed={!deciding}
+            title="Map it, write it, weigh it"
+            onClick={() => setMode('edit')}
+          >
+            Edit
           </button>
+          <button
+            className={deciding ? 'segmented__item is-on' : 'segmented__item'}
+            aria-pressed={deciding}
+            title="Put the editing away and read what you built"
+            onClick={() => setMode('decide')}
+          >
+            Decide
+          </button>
+        </div>
+
+        <div className="header__actions" data-guide="save">
+          {/* the walkthrough points at controls that are not there while deciding */}
+          {!deciding && (
+            <button className="btn btn--quiet" onClick={startGuide} title="Walk through how this works">
+              Guide
+            </button>
+          )}
           <button
             className="btn btn--quiet"
             onClick={() => setTheme(theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark')}
@@ -72,17 +99,22 @@ export function Header() {
           <button className="btn" onClick={() => exportDoc(doc)}>
             Export
           </button>
-          <button className="btn" onClick={() => fileRef.current?.click()}>
-            Open
-          </button>
-          <button
-            className="btn btn--quiet"
-            onClick={() => {
-              if (window.confirm('Start a new decision? The one on screen will be cleared.')) newDoc();
-            }}
-          >
-            New
-          </button>
+          {/* both of these replace the document — not something to reach for while deciding */}
+          {!deciding && (
+            <>
+              <button className="btn" onClick={() => fileRef.current?.click()}>
+                Open
+              </button>
+              <button
+                className="btn btn--quiet"
+                onClick={() => {
+                  if (window.confirm('Start a new decision? The one on screen will be cleared.')) newDoc();
+                }}
+              >
+                New
+              </button>
+            </>
+          )}
           <input
             ref={fileRef}
             className="sr-only"
