@@ -26,6 +26,11 @@ Node 20.19+. Do not bump either without bumping Node.
 
 Playwright needs Chromium's system libraries once: `sudo npx playwright install-deps chromium`.
 
+**Deploys are tag-driven.** `npm version <patch|minor|major>` then `git push --follow-tags`; the tag runs
+typecheck and the suite before publishing to GitHub Pages (`.github/workflows/deploy.yml`). The Pages build
+gets `BASE_PATH=/<repo>/` because a project site is served from a subpath — `vite.config.ts` reads it and
+falls back to `/`, so never hard-code the base or the dev server and the tests break.
+
 ## Architecture
 
 **One store owns the document.** `src/store/useDecisionStore.ts` holds the entire `DecisionDoc` (question,

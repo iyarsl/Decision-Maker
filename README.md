@@ -52,6 +52,32 @@ Playwright needs Chromium's system libraries once:
 sudo npx playwright install-deps chromium
 ```
 
+## Deploying
+
+The build is a static site — no server, no environment, no secrets. `npm run build` writes `dist/`.
+
+**A version is a tag.** Pushing one builds that commit, runs typecheck and the full Playwright suite
+against it, and only then publishes to GitHub Pages:
+
+```bash
+npm version patch      # or minor / major — writes package.json and tags it
+git push --follow-tags
+```
+
+`.github/workflows/deploy.yml` does the rest; `.github/workflows/checks.yml` runs the same checks on every
+push to `main`, so a tag is rarely where you find out something broke. Landing URL:
+`https://<user>.github.io/Decision-Maker/`.
+
+Once, in the repository: **Settings → Pages → Source: GitHub Actions**.
+
+A project site is served from a subpath, so the deploy passes `BASE_PATH=/<repo>/` to the build
+(`vite.config.ts`). Everywhere else — the dev server, a local build — stays at the root. Hosting it at a
+domain root instead (Netlify, Cloudflare Pages, Vercel: build `npm run build`, output `dist`) needs no base
+at all.
+
+Storage is per-origin: a decision saved on `localhost` is not the one on the deployed site. Export the
+`.decision.json` and import it there.
+
 ## Keys
 
 | Key | What it does |
