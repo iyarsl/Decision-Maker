@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDecisionStore } from '../store/useDecisionStore';
-import { balanceOf, MAX_WEIGHT, MIN_WEIGHT, statedWeight, WEIGHT_LABEL, weightOf } from '../store/scoring';
+import { balanceOf, MAX_WEIGHT, MIN_WEIGHT, WEIGHT_LABEL, weightOf } from '../store/scoring';
 import { KIND_LABEL, type Counter, type LedgerItem, type Side } from '../types';
 import './branch.css';
 
@@ -175,7 +175,6 @@ function LedgerRow({
   const name = item.text.trim();
   const counters = item.counters ?? [];
   const counted = weightOf(item);
-  const answered = counted < statedWeight(item);
 
   return (
     <li className="ledger__item">
@@ -206,7 +205,7 @@ function LedgerRow({
               title={
                 item.weight === step ? `${WEIGHT_LABEL[step]} — click to leave it unrated` : WEIGHT_LABEL[step]
               }
-              className={item.weight !== undefined && step <= item.weight ? 'ledger__pip is-on' : 'ledger__pip'}
+              className={pipClass(step, item.weight, counted)}
               // clicking the step it is already on takes the rating back off
               onClick={() =>
                 updateLedgerItem(nodeId, item.id, { weight: item.weight === step ? undefined : step })
@@ -215,21 +214,13 @@ function LedgerRow({
           ))}
         </div>
 
-        <span className="ledger__weight-label data">
-          {answered
-            ? `Answered — counts ${counted}`
-            : item.weight === undefined
-              ? 'Rate it — optional'
-              : WEIGHT_LABEL[item.weight]}
-        </span>
-
         <button
           className="ledger__remove"
           aria-label={`Remove ${name || 'this line'}`}
           title="Remove this line"
           onClick={() => removeLedgerItem(nodeId, item.id)}
         >
-          Remove
+          ×
         </button>
       </div>
 
@@ -320,18 +311,30 @@ function CounterRow({
           ))}
         </div>
 
-        <span className="ledger__weight-label data">takes {statedWeight(counter)} off</span>
-
         <button
           className="ledger__remove"
           aria-label={`Remove ${name || 'this answer'}`}
+          title="Remove this answer"
           onClick={() => removeCounter(nodeId, itemId, counter.id)}
         >
-          Remove
+          ×
         </button>
       </div>
     </li>
   );
+}
+
+/**
+ * Filled up to what the line actually counts; the steps an answer has taken off are struck
+ * through rather than emptied. The bar says "you rated this 4, it is worth 1 now" without
+ * a sentence saying so.
+ */
+function pipClass(step: number, stated: number | undefined, counted: number) {
+  // an unrated line stays unrated to look at, answered or not
+  if (stated === undefined) return 'ledger__pip';
+  if (step <= counted) return 'ledger__pip is-on';
+  if (step <= stated) return 'ledger__pip is-cut';
+  return 'ledger__pip';
 }
 
 /** a field that is as tall as its text, so nothing written is ever out of sight */

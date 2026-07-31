@@ -145,7 +145,9 @@ test('a line can be answered, and the answer takes weight off it', async ({ page
   // it comes off that pro rather than becoming a con of its own: 4 − 3 = 1
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +1');
   await expect(sheet.locator('.ledger__side--con .ledger__item')).toHaveCount(0);
-  await expect(line.locator('.ledger__weight-label').first()).toHaveText('Answered — counts 1');
+  // the rating says so on its own: one step still standing, three struck through
+  await expect(line.locator('.ledger__meta').first().locator('.ledger__pip.is-on')).toHaveCount(1);
+  await expect(line.locator('.ledger__meta').first().locator('.ledger__pip.is-cut')).toHaveCount(3);
 
   // and it travels to the comparison under the line it answers
   await page.keyboard.press('Escape');

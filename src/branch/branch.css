@@ -212,16 +212,6 @@
   flex-shrink: 0;
 }
 
-.ledger__weight-label {
-  flex: 1;
-  min-width: 0;
-  color: var(--mist-faint);
-  font-size: var(--step--2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* five steps, filled up to the weight — a bar you read at a glance, not a slider you drag */
 .ledger__pip {
   width: 26px;
@@ -235,6 +225,19 @@
 
 .ledger__pip:hover {
   border-color: var(--mist-faint);
+}
+
+/* the steps an answer has taken off: rated, then struck out */
+.ledger__pip.is-cut {
+  border-style: solid;
+  border-color: var(--edge);
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    var(--edge) 2px,
+    var(--edge) 4px
+  );
 }
 
 /* rating is optional: an unrated line reads as unset rather than as a zero */
@@ -376,11 +379,6 @@
   background: var(--ground-deep);
 }
 
-/* an answered line is smaller than it looked: say so where the rating is */
-.ledger__item:has(.counter) .ledger__weight-label {
-  color: var(--mist);
-}
-
 /* the end of the list is an invitation, not a button parked under it */
 .ledger__add {
   width: 100%;
@@ -482,12 +480,6 @@
 @media (max-width: 520px) {
   .ledger__pip {
     width: 20px;
-  }
-
-  /* the rating reads on its own line rather than trailing off into an ellipsis */
-  .ledger__weight-label {
-    flex-basis: 100%;
-    white-space: normal;
   }
 
   .counter {
