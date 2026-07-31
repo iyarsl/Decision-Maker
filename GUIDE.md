@@ -130,7 +130,17 @@ The canvas is fully live:
 - A selection of two or more closes the panel and hides the card toolbar: those actions speak for one card at a time.
 - A card dropped on empty canvas floats free until you drag a connector into it — and can be deleted like any other.
 
-## 6. Saving, sharing, starting over
+## 6. When it's time to decide
+
+**Decide** in the header puts the editing away. Same map, same cards — but no toolbars full of actions, no connector dots, no dragging, no Align, no Delete, and the question and every field go read-only. Nothing can be nudged while you are reading.
+
+Clicking a card *reads* it: the name, the thinking, its case with both sides and any answers, the gut read, and any standing from Compare. Compare still opens; Export still works.
+
+One thing stays writable, because it is the point: **Take this path** marks the branch you're going with, in amber. That's a decision, not an edit.
+
+**Edit** switches back. The mode is remembered, so a finished decision opens finished.
+
+## 7. Saving, sharing, starting over
 
 - **Autosave.** Everything writes to your browser's local storage as you type. Close the tab and come back — it's there.
 - **Export** downloads the whole decision as a `.decision.json` file. That's your backup and your way to move it to another machine or send it to someone.
@@ -154,6 +164,8 @@ Write in whatever language you think in. Every field that holds your words — t
 | `Ctrl/Cmd + Enter` | Branch from the selected card |
 | `Delete` / `Backspace` | Delete the selected card and its subtree, or the selected connector |
 | `Esc` | Step back out: the branch page, then Compare, then the panel |
+| `Ctrl/Cmd + Z` | Take back the last delete or align, whether the Undo bar is still up or not |
+| `Enter` in a pro or con | Starts the next line; `Shift+Enter` breaks the line you're in |
 | `Tab` / `Shift+Tab` | Move between cards and controls |
 | Double-click card | Open its panel |
 | Double-click canvas | New loose card there |

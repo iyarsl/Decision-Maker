@@ -16,6 +16,17 @@ async function fresh(page: Page) {
   await page.getByLabel('What are you deciding?').fill(QUESTION);
 }
 
+/** every card's position as the document holds it, rounded */
+const positions = (page: Page) =>
+  page.evaluate(() =>
+    JSON.parse(window.localStorage.getItem('decision-maker:v1')!).state.doc.nodes.map(
+      (node: { position: { x: number; y: number } }) => [
+        Math.round(node.position.x),
+        Math.round(node.position.y),
+      ],
+    ),
+  );
+
 /** click a node card by its visible label */
 const nodeCard = (page: Page, label: string) => page.locator('.node-card').filter({ hasText: label });
 
@@ -189,8 +200,8 @@ test('a line can be answered, and the answer takes weight off it', async ({ page
   await nodeCard(page, QUESTION).first().click();
   await page.getByRole('button', { name: 'Compare branches' }).click();
   const compare = page.getByRole('dialog', { name: 'Compare branches' });
-  await expect(compare.locator('.compare-side__counter')).toContainText('Cost of living is higher there');
-  await expect(compare.locator('.compare-side__counter .compare-side__weight')).toHaveText('−3');
+  await expect(compare.locator('.ledger-read__counter')).toContainText('Cost of living is higher there');
+  await expect(compare.locator('.ledger-read__counter .ledger-read__weight')).toHaveText('−3');
 });
 
 test('a v1 grid becomes each branch its own pros and cons', async ({ page }) => {
@@ -251,6 +262,53 @@ test('a v1 grid becomes each branch its own pros and cons', async ({ page }) => 
   );
   await expect(sheet.locator('.ledger__side--con .ledger__text')).toHaveValue('What it costs me');
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2'); // 5 for, 3 against
+});
+
+test('decide mode puts the editing away and leaves the choosing', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByLabel('Your thinking here').fill('The pay is better and the team ships.');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Decide' }).click();
+  // switching lands on the map, not on whatever was open
+  await expect(page.locator('.panel')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Align branches' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'New' })).toHaveCount(0);
+  await expect(page.getByLabel('What are you deciding?')).toHaveAttribute('readonly', '');
+
+  // one action left on a card, and the panel reads instead of editing
+  const card = nodeCard(page, 'Take the offer');
+  await card.click();
+  await expect(page.locator('.node-tools button')).toHaveCount(1);
+  await expect(page.locator('.panel textarea')).toHaveCount(0);
+  await expect(page.locator('.brief__note')).toContainText('The pay is better');
+
+  // nothing on the canvas can be added, removed or moved — a drag pans the view instead
+  const before = (await card.boundingBox())!;
+  const stored = await positions(page);
+  await page.mouse.move(before.x + before.width / 2, before.y + 14);
+  await page.mouse.down();
+  await page.mouse.move(before.x + before.width / 2 - 180, before.y + 120, { steps: 10 });
+  await page.mouse.up();
+  expect(await positions(page)).toEqual(stored);
+
+  await page.keyboard.press('Delete');
+  await page.locator('.react-flow__pane').dblclick({ position: { x: 120, y: 640 } });
+  await expect(page.locator('.node-card')).toHaveCount(3);
+
+  // taking a path is still yours to record
+  await card.click();
+  await page.getByRole('button', { name: 'Take this path' }).first().click();
+  await expect(card).toHaveClass(/is-chosen/);
+
+  // and the mode survives a reload, then hands the editing back
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Align branches' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.getByRole('button', { name: 'Align branches' })).toBeVisible();
 });
 
 test('autosaves, exports, and reopens a decision file', async ({ page }, testInfo) => {
@@ -433,16 +491,6 @@ test('align puts the map back on one grid, and undo takes it back', async ({ pag
   await addBranch(page, QUESTION, 'Stay and renegotiate');
   await page.waitForTimeout(600);
 
-  const positions = () =>
-    page.evaluate(() =>
-      JSON.parse(window.localStorage.getItem('decision-maker:v1')!).state.doc.nodes.map(
-        (node: { position: { x: number; y: number } }) => [
-          Math.round(node.position.x),
-          Math.round(node.position.y),
-        ],
-      ),
-    );
-
   // scatter one branch, then align
   const card = nodeCard(page, 'Stay and renegotiate');
   const box = (await card.boundingBox())!;
@@ -450,18 +498,42 @@ test('align puts the map back on one grid, and undo takes it back', async ({ pag
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 - 240, box.y + 220, { steps: 10 });
   await page.mouse.up();
-  const scattered = await positions();
+  const scattered = await positions(page);
 
   await page.getByRole('button', { name: 'Align branches' }).click();
-  const aligned = await positions();
+  const aligned = await positions(page);
   // one column per depth, siblings a row apart
   expect(new Set(aligned.map(([x]: number[]) => x)).size).toBe(2);
   expect(Math.abs(aligned[1][1] - aligned[2][1])).toBe(166);
 
   await expect(page.locator('.undo__label')).toHaveText('Branches aligned');
   await page.getByRole('button', { name: 'Undo' }).click();
-  expect(await positions()).toEqual(scattered);
+  expect(await positions(page)).toEqual(scattered);
   await expect(page.locator('.undo')).toHaveCount(0);
+});
+
+test('ctrl-Z takes back the last step, after the bar has gone', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await page.waitForTimeout(600);
+
+  // moving a card is not one of them: putting it back is the same gesture
+  const card = nodeCard(page, 'Take the offer');
+  const box = (await card.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 14);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 200, box.y + 180, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.locator('.undo')).toHaveCount(0);
+
+  // a card that was dragged still opens on the next click
+  await card.click();
+  await expect(page.locator('.panel')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Delete branch' }).click();
+  await expect(page.locator('.node-card')).toHaveCount(1);
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('.node-card')).toHaveCount(2);
 });
 
 test('a branch can be fed by several, and survives losing one of them', async ({ page }) => {

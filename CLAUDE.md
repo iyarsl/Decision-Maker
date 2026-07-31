@@ -59,6 +59,12 @@ panel) draws the share of weight for and against plus the count of lines on each
 belongs to the branch page footer and to Compare, where the lines that produced it are on screen. Do not
 put a score back on the card.
 
+**`mode` is an invariant, not a flag.** `'edit'` is the app you know; `'decide'` is the same map with every
+editing affordance gone (no toolbars beyond Take this path, no dragging, connecting, Align, Delete, Open or
+New, and the panel renders `BranchBrief` instead of the form). It is persisted with `theme`. **Anything
+that changes the document must ask `mode` before it renders or fires** — that is the whole contract, and a
+new control that forgets it silently breaks the mode.
+
 **Two full-screen surfaces, one at a time.** `weighNodeId` opens `src/branch/BranchPage.tsx` (the only
 place a ledger is edited) and `compareNodeId` opens `src/compare/CompareView.tsx` (strictly read-only —
 one authoring surface is the point of the design). Escape steps back out in that order, and the

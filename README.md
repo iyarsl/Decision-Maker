@@ -16,6 +16,10 @@ Three linked surfaces:
 - **Compare** — hold a card's branches up side by side. It is a reading of the pages you already wrote,
   never a second place to type, and it says which branch leads, by how much, and what is carrying it.
 
+**Decide** in the header puts the editing away: the same map with no toolbars, no dragging and nothing
+editable, so the finished decision can be read without being nudged. Marking the path you're taking is the
+one thing still writable.
+
 Everything stays in your browser. Autosave to `localStorage`, plus export/import of a `.decision.json`
 file so a decision is portable.
 
@@ -56,6 +60,8 @@ sudo npx playwright install-deps chromium
 | `Ctrl`/`Cmd` + `Enter` | Adds a branch from the selected node |
 | `Delete` / `Backspace` | Removes the selected branch and everything under it |
 | `Esc` | Steps back out: the branch page, then Compare, then the panel |
+| `Ctrl`/`Cmd` + `Z` | Takes back the last delete or align |
+| `Enter` in a pro or con | Starts the next line; `Shift`+`Enter` breaks this one |
 | `Ctrl`/`Cmd`-click | Holds several branches; drag one and they all move |
 | `Ctrl`/`Cmd`-drag on empty canvas | Boxes a selection |
 | Double-click empty canvas | Drops a loose branch |

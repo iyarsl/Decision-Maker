@@ -535,3 +535,83 @@
     margin-left: var(--sp-2);
   }
 }
+
+/* ---------- a case, read-only (comparison columns and the brief) ---------- */
+
+.ledger-read {
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--edge);
+}
+
+.ledger-read--pro {
+  border-left-color: var(--gain);
+}
+
+.ledger-read--con {
+  border-left-color: var(--risk);
+}
+
+.ledger-read__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.ledger-read__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ledger-read__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.ledger-read__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+/* the answer sits under what it answers, in the other side's colour */
+.ledger-read__counter {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--edge);
+  color: var(--mist);
+  font-family: var(--reading);
+  font-size: var(--step--2);
+  line-height: 1.45;
+}
+
+.ledger-read__counter--pro {
+  border-left-color: var(--risk);
+}
+
+.ledger-read__counter--con {
+  border-left-color: var(--gain);
+}
+
+.ledger-read__text {
+  font-family: var(--reading);
+  font-size: var(--step--1);
+  line-height: 1.45;
+  color: var(--clear);
+}
+
+.ledger-read__weight {
+  flex-shrink: 0;
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+}
