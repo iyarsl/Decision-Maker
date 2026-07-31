@@ -1,0 +1,200 @@
+.canvas {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+/* Branches fade in as they arrive. Opacity only, and no fill mode: React Flow drives the
+   node wrapper's transform, and the card's own transform belongs to :hover. */
+@keyframes card-arrive {
+  from {
+    opacity: 0;
+  }
+}
+
+.node-card {
+  animation: card-arrive 320ms var(--ease-settle);
+}
+
+/* ---------- node card ---------- */
+
+.node-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-node);
+  cursor: grab;
+  transition:
+    border-color 300ms var(--ease-settle),
+    background 300ms var(--ease-settle),
+    box-shadow 220ms var(--ease),
+    opacity 300ms var(--ease-settle),
+    transform 220ms var(--ease);
+}
+
+.node-card:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+
+.node-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.node-card__state {
+  font-size: 0.6rem;
+  color: var(--mist-faint);
+  line-height: 1;
+}
+
+.node-card__label {
+  font-family: var(--display);
+  font-size: var(--step-1);
+  font-weight: 600;
+  font-stretch: 92%;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--clear);
+  overflow-wrap: anywhere;
+}
+
+.node-card__note {
+  font-family: var(--reading);
+  font-size: var(--step--1);
+  line-height: 1.45;
+  color: var(--mist);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.node-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--edge-soft);
+  color: var(--mist);
+  font-size: var(--step--2);
+}
+
+.node-card__verdict {
+  color: var(--gain);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+/* ---------- the fog: unwritten branches stay faint ---------- */
+
+.node-card.is-unresolved {
+  background: color-mix(in srgb, var(--panel) 46%, transparent);
+  border-style: dashed;
+  border-color: var(--edge-soft);
+  box-shadow: none;
+  opacity: 0.82;
+}
+
+.node-card.is-unresolved .node-card__label {
+  color: var(--mist);
+  font-weight: 500;
+}
+
+.node-card.is-unresolved:hover {
+  opacity: 1;
+  border-color: var(--mist-faint);
+}
+
+.node-card.is-resolved .node-card__state {
+  color: var(--gain);
+}
+
+/* ---------- the one amber thing on the page ---------- */
+
+.node-card.is-chosen {
+  border-color: var(--signal);
+  background: linear-gradient(var(--signal-dim), var(--signal-dim)), var(--panel);
+  opacity: 1;
+}
+
+.node-card.is-chosen .node-card__state {
+  color: var(--signal);
+}
+
+/* ---------- kinds ---------- */
+
+.node-card--decision {
+  border-radius: var(--r-lg) var(--r-lg) var(--r-lg) 2px;
+}
+
+.node-card--decision .node-card__label {
+  font-size: var(--step-2);
+  font-stretch: 86%;
+}
+
+.node-card--outcome {
+  background: color-mix(in srgb, var(--ground-deep) 70%, var(--panel));
+}
+
+.node-card--outcome.is-unresolved {
+  background: color-mix(in srgb, var(--ground-deep) 40%, transparent);
+}
+
+/* ---------- toolbar ---------- */
+
+.node-tools {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  background: var(--panel-raised);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lift);
+}
+
+/* ---------- canvas chrome ---------- */
+
+.canvas-hint {
+  max-width: none;
+  white-space: nowrap;
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.canvas-hint__pending {
+  margin-top: var(--sp-1);
+  color: var(--mist);
+}
+
+.thought-edge {
+  transition: stroke 260ms var(--ease), stroke-width 260ms var(--ease), opacity 260ms var(--ease);
+}
+
+@media (max-width: 720px) {
+  .canvas-hint {
+    display: none;
+  }
+
+  .react-flow__minimap {
+    display: none;
+  }
+
+  .node-tools {
+    flex-wrap: wrap;
+    max-width: 84vw;
+  }
+}
