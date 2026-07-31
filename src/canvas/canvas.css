@@ -244,6 +244,18 @@
   border-color: var(--clear);
 }
 
+/* Either end of a connection can be dragged onto another card. The grab area is React
+   Flow's own circle, so the handle invariants apply here too: no transform, and no
+   ::after overlay — both would take the hit test away from it. Only the cursor and the
+   line under it say the end is live. */
+.react-flow__edgeupdater {
+  cursor: grab;
+}
+
+.react-flow__edge:hover .thought-edge {
+  stroke-width: 2.4;
+}
+
 .canvas-tools {
   display: flex;
   gap: var(--sp-2);

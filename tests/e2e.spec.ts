@@ -427,6 +427,44 @@ test('a branch can be fed by several, and survives losing one of them', async ({
   await expect(page.locator('.node-card')).toHaveCount(4);
 });
 
+test('a connection can be dragged onto a different card', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await addBranch(page, 'Take the offer', 'Burn out again');
+  await page.waitForTimeout(700); // the view settles before ends are where they look
+
+  const handle = async (label: string, kind: 'source' | 'target') =>
+    (await page
+      .locator('.react-flow__node', { hasText: label })
+      .first()
+      .locator(`.react-flow__handle.${kind}`)
+      .boundingBox())!;
+
+  const from = await handle('Take the offer', 'source');
+  const onto = await handle('Stay and renegotiate', 'source');
+
+  // grab the connection's feeding end just clear of the card's own handle — the handle
+  // owns the middle of that spot, and its hit test comes first
+  await page.mouse.move(from.x + from.width / 2 + 16, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(onto.x + onto.width / 2, onto.y + onto.height / 2, { steps: 16 });
+  await page.mouse.up();
+
+  const parents = async () =>
+    page.evaluate(() => {
+      const doc = JSON.parse(window.localStorage.getItem('decision-maker:v1')!).state.doc;
+      const label = (id: string) =>
+        doc.nodes.find((n: { id: string }) => n.id === id)?.data.label as string;
+      return doc.edges.map((e: { source: string; target: string }) => [label(e.source), label(e.target)]);
+    });
+
+  // still three connections, and the outcome now hangs off the other branch
+  expect(await parents()).toContainEqual(['Stay and renegotiate', 'Burn out again']);
+  expect(await parents()).not.toContainEqual(['Take the offer', 'Burn out again']);
+  await expect(page.locator('.react-flow__edge')).toHaveCount(3);
+});
+
 test('the canvas pans, zooms, and moves nodes', async ({ page }) => {
   await fresh(page);
   const viewport = page.locator('.react-flow__viewport');

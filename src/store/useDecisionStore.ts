@@ -1,4 +1,11 @@
-import { applyEdgeChanges, applyNodeChanges, type Connection, type EdgeChange, type NodeChange } from '@xyflow/react';
+import {
+  applyEdgeChanges,
+  applyNodeChanges,
+  reconnectEdge,
+  type Connection,
+  type EdgeChange,
+  type NodeChange,
+} from '@xyflow/react';
 import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -59,6 +66,7 @@ interface DecisionState {
   onNodesChange: (changes: NodeChange<TreeNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<TreeEdge>[]) => void;
   onConnect: (connection: Connection) => void;
+  reconnect: (oldEdge: TreeEdge, connection: Connection) => void;
 
   selectNode: (nodeId: string | null) => void;
   addChild: (parentId: string, kind?: NodeKind) => string;
@@ -127,6 +135,18 @@ function subtreeIds(doc: DecisionDoc, rootId: string): Set<string> {
     }
   }
   return ids;
+}
+
+/**
+ * The rules a connection has to pass, whether it is being drawn or dragged onto a new
+ * card: it has two different ends, it isn't one the map already has, and it doesn't feed
+ * the decision itself — nothing comes before the question.
+ */
+function allowedConnection(doc: DecisionDoc, connection: Connection): boolean {
+  const { source, target } = connection;
+  if (!source || !target || source === target) return false;
+  if (doc.nodes[0]?.id === target) return false;
+  return !doc.edges.some((edge) => edge.source === source && edge.target === target);
 }
 
 export function childrenOf(doc: DecisionDoc, nodeId: string): TreeNode[] {
@@ -205,13 +225,7 @@ export const useDecisionStore = create<DecisionState>()(
 
       onConnect: (connection) =>
         set((state) => {
-          if (!connection.source || !connection.target || connection.source === connection.target) {
-            return state;
-          }
-          const exists = state.doc.edges.some(
-            (e) => e.source === connection.source && e.target === connection.target,
-          );
-          if (exists) return state;
+          if (!allowedConnection(state.doc, connection)) return state;
           // a branch can feed as many others as it needs, and can be fed by several:
           // two options often lead to the same outcome
           return {
@@ -220,6 +234,18 @@ export const useDecisionStore = create<DecisionState>()(
                 ...state.doc.edges,
                 { id: id(), source: connection.source, target: connection.target, type: 'thought' },
               ],
+            }),
+          };
+        }),
+
+      // dragging either end of an existing connection onto another card, rather than
+      // deleting it and drawing a new one. Same rules as drawing one.
+      reconnect: (oldEdge, connection) =>
+        set((state) => {
+          if (!allowedConnection(state.doc, connection)) return state;
+          return {
+            doc: touch(state.doc, {
+              edges: reconnectEdge(oldEdge, connection, state.doc.edges),
             }),
           };
         }),

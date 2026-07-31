@@ -25,6 +25,7 @@ export function Canvas() {
   const onNodesChange = useDecisionStore((s) => s.onNodesChange);
   const onEdgesChange = useDecisionStore((s) => s.onEdgesChange);
   const onConnect = useDecisionStore((s) => s.onConnect);
+  const reconnect = useDecisionStore((s) => s.reconnect);
   const selectNode = useDecisionStore((s) => s.selectNode);
   const focusNode = useDecisionStore((s) => s.focusNode);
   const addChild = useDecisionStore((s) => s.addChild);
@@ -132,6 +133,10 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={reconnect}
+        edgesReconnectable
+        // an end dropped on empty canvas snaps back; detaching is Delete on a selected connection
+        reconnectRadius={24}
         onSelectionChange={onSelectionChange}
         onNodeClick={onNodeClick}
         onNodeDragStart={onNodeDragStart}
