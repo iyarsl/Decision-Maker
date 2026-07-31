@@ -36,6 +36,8 @@ Click a card to select it. A small toolbar appears above it:
 | **Lean here** | Marks the path you're leaning toward, in amber |
 | **Delete** | Removes the branch and everything under it |
 
+Deleting leaves an **Undo** on offer for a few seconds, so a wrong Delete costs nothing. A branch fed by another card as well as this one stays put — it was never only this one's.
+
 The panel has the same thing as **Delete branch**, and the `Delete` or `Backspace` key removes the card you are looking at — panel open or not, as long as the caret isn't in a text field. The key also removes whatever is selected on the canvas — including a connector, if you click one first. Shift+click to select several and delete them together. Deleting a branch takes its sub-branches and any grid it owned with it. The decision card itself cannot be deleted; **New** clears the board instead.
 
 There is **no limit of two branches**. Add as many as the decision actually has — five options, three outcomes under one of them, whatever the shape is. New siblings stack and re-centre under their parent automatically.
@@ -44,7 +46,7 @@ Other ways to add:
 
 - **Double-click empty canvas** — drops a loose card wherever you clicked.
 - **Ctrl/Cmd + Enter** — adds a branch from the selected card.
-- **Drag from a card's side handle to another card** — connects them by hand.
+- **Drag from a card's side handle to another card** — connects them by hand. A card can feed as many others as you like, and can be fed by several: two options often lead to the same outcome. Drop anywhere near the target's handle and it snaps.
 
 Every card is a **type**, set in the panel:
 
@@ -109,7 +111,9 @@ The canvas is fully live:
 - **Drag a card** to move it. **Drag empty space** to pan. **Scroll** to pan; **pinch or Ctrl+scroll** to zoom.
 - **Bottom-right controls** — zoom in/out, fit the whole tree on screen.
 - **Bottom-left minimap** — drag it to jump. Cards are colour-coded: amber = leaning, light = written, dark = still unwritten.
-- **Ctrl+click** (Cmd on a Mac) adds cards to a selection — drag any one of them and the whole group travels, keeping its shape. **Shift+drag** boxes a selection out of empty canvas. **Delete** removes everything held.
+- **Ctrl+click** (Cmd on a Mac) adds cards to a selection — drag any one of them and the whole group travels, keeping its shape. **Ctrl+drag across empty canvas** boxes a selection instead of panning. **Delete** removes everything held.
+- **Align branches**, top right, puts the whole map back on one grid: a column per depth, siblings a row apart, every card centred under what it came from. Nothing is lost — anything you dragged out on purpose can be dragged back, and **Undo** sits at the bottom of the screen for a few seconds after.
+- Moving a card never opens its panel. The panel is for a click that stayed still; if the card you open sits under the drawer, the view slides just far enough to keep it in sight.
 - A selection of two or more closes the panel and hides the card toolbar: those actions speak for one card at a time.
 - A card dropped on empty canvas floats free until you drag a connector into it — and can be deleted like any other.
 

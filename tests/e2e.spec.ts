@@ -246,6 +246,88 @@ test('ctrl-click holds several branches and they travel together', async ({ page
   expect(Math.abs(heldNow.x - held.x - (draggedNow.x - dragged.x))).toBeLessThan(4);
   expect(Math.abs(heldNow.y - held.y - (draggedNow.y - dragged.y))).toBeLessThan(4);
   expect(Math.abs(leftNow.x - left.x)).toBeLessThan(2);
+
+  // ctrl-drag across empty canvas boxes a selection instead of panning
+  await page.locator('.react-flow__pane').click({ position: { x: 40, y: 40 } });
+  await expect(page.locator('.react-flow__node.selected')).toHaveCount(0);
+  await page.mouse.move(30, 120);
+  await page.keyboard.down('Control');
+  await page.mouse.down();
+  await page.mouse.move(1240, 700, { steps: 14 });
+  await page.mouse.up();
+  await page.keyboard.up('Control');
+  await expect(page.locator('.react-flow__node.selected')).toHaveCount(4);
+});
+
+test('align puts the map back on one grid, and undo takes it back', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await page.waitForTimeout(600);
+
+  const positions = () =>
+    page.evaluate(() =>
+      JSON.parse(window.localStorage.getItem('decision-maker:v1')!).state.doc.nodes.map(
+        (node: { position: { x: number; y: number } }) => [
+          Math.round(node.position.x),
+          Math.round(node.position.y),
+        ],
+      ),
+    );
+
+  // scatter one branch, then align
+  const card = nodeCard(page, 'Stay and renegotiate');
+  const box = (await card.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 14);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 240, box.y + 220, { steps: 10 });
+  await page.mouse.up();
+  const scattered = await positions();
+
+  await page.getByRole('button', { name: 'Align branches' }).click();
+  const aligned = await positions();
+  // one column per depth, siblings a row apart
+  expect(new Set(aligned.map(([x]: number[]) => x)).size).toBe(2);
+  expect(Math.abs(aligned[1][1] - aligned[2][1])).toBe(166);
+
+  await expect(page.locator('.undo__label')).toHaveText('Branches aligned');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  expect(await positions()).toEqual(scattered);
+  await expect(page.locator('.undo')).toHaveCount(0);
+});
+
+test('a branch can be fed by several, and survives losing one of them', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await addBranch(page, 'Take the offer', 'Burn out again');
+  await page.waitForTimeout(700); // the view settles before handles are where they look
+
+  const handle = async (label: string, kind: 'source' | 'target') => {
+    const box = (await page
+      .locator('.react-flow__node', { hasText: label })
+      .first()
+      .locator(`.react-flow__handle.${kind}`)
+      .boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  };
+
+  const from = await handle('Stay and renegotiate', 'source');
+  const to = await handle('Burn out again', 'target');
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 14 });
+  await page.mouse.up();
+  await expect(page.locator('.react-flow__edge')).toHaveCount(4);
+
+  // the outcome now hangs off both options, so deleting one leaves it standing
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByRole('button', { name: 'Delete branch' }).click();
+  await expect(page.locator('.node-card')).toHaveCount(3);
+  await expect(nodeCard(page, 'Burn out again')).toBeVisible();
+  await expect(page.locator('.undo__label')).toContainText('Deleted Take the offer');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.locator('.node-card')).toHaveCount(4);
 });
 
 test('the canvas pans, zooms, and moves nodes', async ({ page }) => {

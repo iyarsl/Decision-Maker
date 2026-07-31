@@ -34,6 +34,9 @@ async function build(page: Page) {
   await page.getByLabel('What are you deciding?').fill(SEED.question);
 
   for (const branch of SEED.branches) {
+    // the view follows a card out from under the panel, so bring the whole map back first
+    await page.getByRole('button', { name: 'fit view' }).click();
+    await page.waitForTimeout(400);
     await page.locator('.node-card').filter({ hasText: SEED.question }).first().click();
     await page.getByRole('button', { name: '+ Branch from here' }).click();
     await page.getByLabel('Name this branch').fill(branch.label);
@@ -51,6 +54,7 @@ async function capture(theme: 'dark' | 'light', width: number, height: number, t
   });
 
   await build(page);
+  await page.getByRole('button', { name: 'fit view' }).click();
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${OUT}/${tag}-canvas-${theme}.png` });
 
@@ -59,6 +63,8 @@ async function capture(theme: 'dark' | 'light', width: number, height: number, t
   await page.screenshot({ path: `${OUT}/${tag}-panel-${theme}.png` });
 
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'fit view' }).click();
+  await page.waitForTimeout(400);
   await page.locator('.node-card').filter({ hasText: SEED.question }).first().click();
   await page.getByRole('button', { name: 'Compare options' }).click();
   const sheet = page.getByRole('dialog', { name: 'Compare options' });
