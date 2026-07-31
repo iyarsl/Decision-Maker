@@ -1,0 +1,7 @@
+node_modules
+dist
+.screens
+test-results
+playwright-report
+tsconfig.tsbuildinfo
+.DS_Store
