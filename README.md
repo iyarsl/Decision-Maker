@@ -49,9 +49,10 @@ sudo npx playwright install-deps chromium
 |---|---|
 | Click a card | Opens the thought panel for that branch |
 | `Ctrl`/`Cmd` + `Enter` | Adds a branch from the selected node |
-| `Delete` | Removes the selected branch and everything under it |
+| `Delete` / `Backspace` | Removes the selected branch and everything under it |
 | `Esc` | Closes the grid, then the panel |
-| Shift-drag | Selects several nodes |
+| `Ctrl`/`Cmd`-click | Holds several branches; drag one and they all move |
+| `Ctrl`/`Cmd`-drag on empty canvas | Boxes a selection |
 | Double-click empty canvas | Drops a loose branch |
 
 ## Layout
