@@ -8,15 +8,29 @@ import { mkdir } from 'node:fs/promises';
 const BASE = process.env.BASE_URL ?? 'http://localhost:5183';
 const OUT = '.screens';
 
+type Item = ['pro' | 'con', string, number];
+
 const SEED = {
   question: 'Should I leave the job?',
   branches: [
     {
       label: 'Take the offer',
       note: 'The pay is better and the team ships every week. I would be starting over on trust, and I would miss the people here.',
+      ledger: [
+        ['pro', 'Better pay', 4],
+        ['pro', 'They ship every week', 5],
+        ['con', 'Starting over on trust', 3],
+      ] as Item[],
     },
-    { label: 'Stay and renegotiate', note: 'Cheapest to try. If the answer is no, I have learned something real.' },
-    { label: 'Leave with nothing lined up', note: '' },
+    {
+      label: 'Stay and renegotiate',
+      note: 'Cheapest to try. If the answer is no, I have learned something real.',
+      ledger: [
+        ['pro', 'Keep the people I like', 4],
+        ['con', 'Same ceiling next year', 3],
+      ] as Item[],
+    },
+    { label: 'Leave with nothing lined up', note: '', ledger: [] as Item[] },
   ],
 };
 
@@ -41,6 +55,18 @@ async function build(page: Page) {
     await page.getByRole('button', { name: '+ Branch from here' }).click();
     await page.getByLabel('Name this branch').fill(branch.label);
     if (branch.note) await page.getByLabel('Your thinking here').fill(branch.note);
+
+    if (branch.ledger.length) {
+      await page.getByRole('button', { name: "What's for it, what's against" }).click();
+      for (const [side, text, weight] of branch.ledger) {
+        await page.getByRole('button', { name: side === 'pro' ? '+ Add a pro' : '+ Add a con' }).click();
+        const row = page.locator(`.ledger__side--${side} .ledger__row`).last();
+        await row.locator('.ledger__text').fill(text);
+        await row.getByRole('radio', { name: String(weight), exact: true }).click();
+      }
+      await page.keyboard.press('Escape');
+    }
+
     await page.keyboard.press('Escape');
   }
 }
@@ -62,27 +88,18 @@ async function capture(theme: 'dark' | 'light', width: number, height: number, t
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${OUT}/${tag}-panel-${theme}.png` });
 
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${OUT}/${tag}-branch-${theme}.png` });
+  await page.keyboard.press('Escape');
+
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'fit view' }).click();
   await page.waitForTimeout(400);
   await page.locator('.node-card').filter({ hasText: SEED.question }).first().click();
-  await page.getByRole('button', { name: 'Compare options' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Compare options' });
-  const weights = sheet.getByRole('slider');
-  await weights.nth(0).fill('3');
-  await weights.nth(1).fill('9');
-  const score = (option: string, criterion: string, label: string) =>
-    sheet
-      .getByRole('radiogroup', { name: `${option} on ${criterion}` })
-      .getByRole('radio', { name: label, exact: true })
-      .click();
-  await score('Take the offer', 'What it costs me', 'Con');
-  await score('Take the offer', 'What it gives me', 'Strong pro');
-  await score('Stay and renegotiate', 'What it costs me', 'Pro');
-  await score('Stay and renegotiate', 'What it gives me', 'Slight con');
-  await score('Leave with nothing lined up', 'What it costs me', 'Strong con');
+  await page.getByRole('button', { name: 'Compare branches' }).click();
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${OUT}/${tag}-grid-${theme}.png` });
+  await page.screenshot({ path: `${OUT}/${tag}-compare-${theme}.png` });
 
   await browser.close();
 }

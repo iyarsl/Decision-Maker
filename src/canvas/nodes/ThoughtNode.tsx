@@ -1,12 +1,14 @@
 import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/react';
 import { isResolved, KIND_LABEL, type TreeNode } from '../../types';
 import { useDecisionStore } from '../../store/useDecisionStore';
+import { balanceOf } from '../../store/scoring';
 import { FEELINGS } from '../../panel/feelings';
 import { NODE_WIDTH } from '../layout';
 
 export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
   const addChild = useDecisionStore((s) => s.addChild);
-  const openGridForNode = useDecisionStore((s) => s.openGridForNode);
+  const openCompare = useDecisionStore((s) => s.openCompare);
+  const openWeigh = useDecisionStore((s) => s.openWeigh);
   const toggleChosen = useDecisionStore((s) => s.toggleChosen);
   const deleteNode = useDecisionStore((s) => s.deleteNode);
   const selectNode = useDecisionStore((s) => s.selectNode);
@@ -14,8 +16,10 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
   // A node dropped on empty canvas is not root — it can be deleted and connected up later.
   const isRoot = useDecisionStore((s) => s.doc.nodes[0]?.id === id);
   const solo = useDecisionStore((s) => s.selectedNodeId === id);
+  const branchCount = useDecisionStore((s) => s.doc.edges.filter((e) => e.source === id).length);
 
   const resolved = isResolved(data);
+  const balance = balanceOf(data);
   const feeling = data.feeling === undefined ? undefined : FEELINGS.find((f) => f.value === data.feeling);
 
   return (
@@ -27,7 +31,19 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
           <button className="btn" onClick={() => addChild(id)} title="Add a branch from here">
             + Branch
           </button>
-          <button className="btn" onClick={() => openGridForNode(id)} title="Weigh this node's options">
+          <button className="btn" onClick={() => openWeigh(id)} title="What's for this branch, what's against">
+            Weigh
+          </button>
+          <button
+            className="btn"
+            disabled={branchCount < 2}
+            onClick={() => openCompare(id)}
+            title={
+              branchCount < 2
+                ? 'Compare needs at least two branches from this card'
+                : 'Put the branches from here side by side'
+            }
+          >
             Compare
           </button>
           <button
@@ -77,8 +93,19 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
           </p>
         )}
 
-        {(data.verdict || feeling || data.likelihood !== undefined) && (
+        {(balance.count > 0 || data.verdict || feeling || data.likelihood !== undefined) && (
           <footer className="node-card__foot data">
+            {balance.count > 0 && (
+              <span
+                className={
+                  balance.net < 0 ? 'node-card__net is-against' : 'node-card__net'
+                }
+                title={`${balance.forTotal} for, ${balance.againstTotal} against`}
+              >
+                {balance.net > 0 ? '+' : ''}
+                {balance.net}
+              </span>
+            )}
             {data.verdict && (
               <span className="node-card__verdict" title={`Leads by ${data.verdict.margin}`}>
                 <bdi>{data.verdict.winnerLabel}</bdi> · {data.verdict.score > 0 ? '+' : ''}

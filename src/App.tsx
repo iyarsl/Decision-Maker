@@ -3,14 +3,16 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { Header } from './chrome/Header';
 import { Canvas } from './canvas/Canvas';
 import { ThoughtPanel } from './panel/ThoughtPanel';
-import { GridView } from './grid/GridView';
+import { CompareView } from './compare/CompareView';
+import { BranchPage } from './branch/BranchPage';
 import { GuideTour } from './guide/GuideTour';
 import { UndoBar } from './chrome/UndoBar';
 import { useDecisionStore } from './store/useDecisionStore';
 
 export default function App() {
   const theme = useDecisionStore((s) => s.theme);
-  const gridOpen = useDecisionStore((s) => Boolean(s.openGridId));
+  const compareOpen = useDecisionStore((s) => Boolean(s.compareNodeId));
+  const weighOpen = useDecisionStore((s) => Boolean(s.weighNodeId));
 
   useEffect(() => {
     const root = document.documentElement;
@@ -18,12 +20,14 @@ export default function App() {
     else root.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Escape always steps back out: grid first, then the thought panel
+  // Escape always steps back out: the branch page, then the comparison, then the panel
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || event.defaultPrevented) return;
-      const { openGridId, selectedNodeId, closeGrid, selectNode } = useDecisionStore.getState();
-      if (openGridId) closeGrid();
+      const { weighNodeId, compareNodeId, selectedNodeId, closeWeigh, closeCompare, selectNode } =
+        useDecisionStore.getState();
+      if (weighNodeId) closeWeigh();
+      else if (compareNodeId) closeCompare();
       else if (selectedNodeId) selectNode(null);
     };
     window.addEventListener('keydown', onKeyDown);
@@ -44,8 +48,8 @@ export default function App() {
       if ((target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') && field?.value.length) {
         return;
       }
-      const { selectedNodeId, openGridId, doc, deleteNode } = useDecisionStore.getState();
-      if (openGridId || !selectedNodeId || doc.nodes[0]?.id === selectedNodeId) return;
+      const { selectedNodeId, compareNodeId, weighNodeId, doc, deleteNode } = useDecisionStore.getState();
+      if (compareNodeId || weighNodeId || !selectedNodeId || doc.nodes[0]?.id === selectedNodeId) return;
       event.preventDefault();
       deleteNode(selectedNodeId);
     };
@@ -61,7 +65,8 @@ export default function App() {
           <Canvas />
           <ThoughtPanel />
         </main>
-        {gridOpen && <GridView />}
+        {compareOpen && <CompareView />}
+        {weighOpen && <BranchPage />}
       </ReactFlowProvider>
       <UndoBar />
       <GuideTour />

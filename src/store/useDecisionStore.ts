@@ -3,34 +3,30 @@ import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
-  cellKey,
+  DOC_VERSION,
   isResolved,
-  type Cell,
-  type Criterion,
   type DecisionDoc,
-  type Grid,
-  type GridMode,
-  type GridOption,
+  type LedgerItem,
   type NodeKind,
+  type Side,
   type TreeEdge,
   type TreeNode,
   type TreeNodeData,
 } from '../types';
 import { childPosition, freePosition, isTidyFan, tidyFan, tidyTree } from '../canvas/layout';
-import { MAX_WEIGHT, MIN_WEIGHT, scoreGrid } from './scoring';
+import { compareBranches, MAX_WEIGHT, MIN_WEIGHT } from './scoring';
+import { migrateDoc } from './io';
 
 export const STORAGE_KEY = 'decision-maker:v1';
 
 const id = () => nanoid(8);
 const now = () => new Date().toISOString();
 
-const DEFAULT_CRITERIA = ['What it costs me', 'What it gives me', 'How it feels in a year'];
-
 export function createDoc(question = ''): DecisionDoc {
   const rootId = id();
   return {
     id: id(),
-    version: 1,
+    version: DOC_VERSION,
     question,
     createdAt: now(),
     updatedAt: now(),
@@ -43,14 +39,16 @@ export function createDoc(question = ''): DecisionDoc {
       },
     ],
     edges: [],
-    grids: {},
   };
 }
 
 interface DecisionState {
   doc: DecisionDoc;
   selectedNodeId: string | null;
-  openGridId: string | null;
+  /** the intersection whose branches are being compared — a ledger belongs to a node, not to itself */
+  compareNodeId: string | null;
+  /** the branch whose own case is open, full screen */
+  weighNodeId: string | null;
   theme: 'system' | 'light' | 'dark';
   /** the one step back an undoable action leaves behind, offered for a few seconds */
   undo: { doc: DecisionDoc; label: string; at: number } | null;
@@ -73,18 +71,14 @@ interface DecisionState {
   dismissUndo: () => void;
   toggleChosen: (nodeId: string) => void;
 
-  openGridForNode: (nodeId: string) => string;
-  closeGrid: () => void;
-  setGridTitle: (gridId: string, title: string) => void;
-  setGridMode: (gridId: string, mode: GridMode) => void;
-  addCriterion: (gridId: string, label?: string) => void;
-  updateCriterion: (gridId: string, criterionId: string, patch: Partial<Criterion>) => void;
-  removeCriterion: (gridId: string, criterionId: string) => void;
-  addOption: (gridId: string, label?: string) => void;
-  updateOption: (gridId: string, optionId: string, patch: Partial<GridOption>) => void;
-  removeOption: (gridId: string, optionId: string) => void;
-  setCell: (gridId: string, optionId: string, criterionId: string, patch: Partial<Cell>) => void;
-  promoteOptions: (gridId: string) => number;
+  addLedgerItem: (nodeId: string, side: Side) => string;
+  updateLedgerItem: (nodeId: string, itemId: string, patch: Partial<LedgerItem>) => void;
+  removeLedgerItem: (nodeId: string, itemId: string) => void;
+
+  openWeigh: (nodeId: string) => void;
+  closeWeigh: () => void;
+  openCompare: (nodeId: string) => void;
+  closeCompare: () => void;
 
   newDoc: () => void;
   loadDoc: (doc: DecisionDoc) => void;
@@ -104,10 +98,14 @@ const patchNode = (doc: DecisionDoc, nodeId: string, patch: Partial<TreeNodeData
     ),
   });
 
-const patchGrid = (doc: DecisionDoc, gridId: string, patch: Partial<Grid>) => {
-  const grid = doc.grids[gridId];
-  if (!grid) return doc;
-  return touch(doc, { grids: { ...doc.grids, [gridId]: { ...grid, ...patch } } });
+const patchLedger = (
+  doc: DecisionDoc,
+  nodeId: string,
+  change: (ledger: LedgerItem[]) => LedgerItem[],
+) => {
+  const node = doc.nodes.find((n) => n.id === nodeId);
+  if (!node) return doc;
+  return patchNode(doc, nodeId, { ledger: change(node.data.ledger ?? []) });
 };
 
 /**
@@ -169,7 +167,8 @@ export const useDecisionStore = create<DecisionState>()(
     (set, get) => ({
       doc: createDoc(),
       selectedNodeId: null,
-      openGridId: null,
+      compareNodeId: null,
+      weighNodeId: null,
       theme: 'system',
       undo: null,
 
@@ -314,18 +313,16 @@ export const useDecisionStore = create<DecisionState>()(
           if (state.doc.nodes[0]?.id === nodeId) return state;
           const doomed = subtreeIds(state.doc, nodeId);
           const label = state.doc.nodes.find((n) => n.id === nodeId)?.data.label;
-          const grids = Object.fromEntries(
-            Object.entries(state.doc.grids).filter(([, grid]) => !doomed.has(grid.nodeId)),
-          );
-          const openGridId = state.openGridId && grids[state.openGridId] ? state.openGridId : null;
           return {
             doc: touch(state.doc, {
               nodes: state.doc.nodes.filter((n) => !doomed.has(n.id)),
               edges: state.doc.edges.filter((e) => !doomed.has(e.source) && !doomed.has(e.target)),
-              grids,
             }),
             selectedNodeId: state.selectedNodeId && doomed.has(state.selectedNodeId) ? null : state.selectedNodeId,
-            openGridId,
+            // a comparison of branches that no longer exist has nothing left to say
+            compareNodeId:
+              state.compareNodeId && doomed.has(state.compareNodeId) ? null : state.compareNodeId,
+            weighNodeId: state.weighNodeId && doomed.has(state.weighNodeId) ? null : state.weighNodeId,
             undo: {
               doc: state.doc,
               label: `Deleted ${label?.trim() || 'a branch'}`,
@@ -348,208 +345,74 @@ export const useDecisionStore = create<DecisionState>()(
           };
         }),
 
-      openGridForNode: (nodeId) => {
-        const existing = get().doc.nodes.find((n) => n.id === nodeId)?.data.gridId;
-        if (existing && get().doc.grids[existing]) {
-          set({ openGridId: existing, selectedNodeId: nodeId });
-          return existing;
-        }
-
-        const gridId = id();
-        set((state) => {
-          const node = state.doc.nodes.find((n) => n.id === nodeId);
-          if (!node) return state;
-          const branches = childrenOf(state.doc, nodeId);
-          const options: GridOption[] =
-            branches.length > 0
-              ? branches.map((child, index) => ({
-                  id: id(),
-                  label: child.data.label || `Option ${index + 1}`,
-                  nodeId: child.id,
-                }))
-              : [
-                  { id: id(), label: 'Option A' },
-                  { id: id(), label: 'Option B' },
-                ];
-
-          const grid: Grid = {
-            id: gridId,
-            nodeId,
-            title: 'Compare the options',
-            criteria: DEFAULT_CRITERIA.map((label) => ({ id: id(), label, weight: 5 })),
-            options,
-            cells: {},
-            mode: 'weighted',
-          };
-
-          return {
-            doc: patchNode(touch(state.doc, { grids: { ...state.doc.grids, [gridId]: grid } }), nodeId, {
-              gridId,
-            }),
-            openGridId: gridId,
-            selectedNodeId: nodeId,
-          };
-        });
-        return gridId;
+      addLedgerItem: (nodeId, side) => {
+        const itemId = id();
+        set((state) => ({
+          // no weight to begin with: rating a line is optional, and an unrated one counts as one
+          doc: patchLedger(state.doc, nodeId, (ledger) => [...ledger, { id: itemId, side, text: '' }]),
+        }));
+        return itemId;
       },
 
-      closeGrid: () =>
+      updateLedgerItem: (nodeId, itemId, patch) =>
+        set((state) => ({
+          doc: patchLedger(state.doc, nodeId, (ledger) =>
+            ledger.map((item) => {
+              if (item.id !== itemId) return item;
+              const next = { ...item, ...patch };
+              // `weight: undefined` in the patch means the user took the rating back off
+              if (next.weight !== undefined) {
+                next.weight = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, Math.round(next.weight)));
+              }
+              return next;
+            }),
+          ),
+        })),
+
+      removeLedgerItem: (nodeId, itemId) =>
+        set((state) => ({
+          doc: patchLedger(state.doc, nodeId, (ledger) => ledger.filter((item) => item.id !== itemId)),
+        })),
+
+      // the card stays selected behind the page, so closing it lands back where you were
+      openWeigh: (nodeId) => set({ weighNodeId: nodeId, selectedNodeId: nodeId, compareNodeId: null }),
+
+      closeWeigh: () => set({ weighNodeId: null }),
+
+      openCompare: (nodeId) => set({ compareNodeId: nodeId, selectedNodeId: nodeId }),
+
+      closeCompare: () =>
         set((state) => {
-          const grid = state.openGridId ? state.doc.grids[state.openGridId] : undefined;
-          if (!grid) return { openGridId: null };
-          const { winner, margin, tied, completeness } = scoreGrid(grid);
-          // an untouched grid shouldn't stamp a verdict on the node
+          const nodeId = state.compareNodeId;
+          if (!nodeId) return { compareNodeId: null };
+          const { leader, margin, tied, weighed } = compareBranches(childrenOf(state.doc, nodeId));
+          // branches nobody has weighed yet shouldn't stamp a verdict on the card
           const verdict =
-            winner && !tied && completeness > 0
-              ? { winnerLabel: winner.label, score: winner.total, margin }
+            leader && !tied && weighed > 0
+              ? { winnerLabel: leader.label, score: leader.balance.net, margin }
               : undefined;
-          return { doc: patchNode(state.doc, grid.nodeId, { verdict }), openGridId: null };
+          return { doc: patchNode(state.doc, nodeId, { verdict }), compareNodeId: null };
         }),
 
-      setGridTitle: (gridId, title) => set((state) => ({ doc: patchGrid(state.doc, gridId, { title }) })),
+      newDoc: () =>
+        set({ doc: createDoc(), selectedNodeId: null, compareNodeId: null, weighNodeId: null, undo: null }),
 
-      setGridMode: (gridId, mode) => set((state) => ({ doc: patchGrid(state.doc, gridId, { mode }) })),
-
-      addCriterion: (gridId, label = '') =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              criteria: [...grid.criteria, { id: id(), label, weight: 5 }],
-            }),
-          };
-        }),
-
-      updateCriterion: (gridId, criterionId, patch) =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              criteria: grid.criteria.map((criterion) =>
-                criterion.id === criterionId
-                  ? {
-                      ...criterion,
-                      ...patch,
-                      weight:
-                        patch.weight === undefined
-                          ? criterion.weight
-                          : Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, Math.round(patch.weight))),
-                    }
-                  : criterion,
-              ),
-            }),
-          };
-        }),
-
-      removeCriterion: (gridId, criterionId) =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          const cells = Object.fromEntries(
-            Object.entries(grid.cells).filter(([key]) => !key.endsWith(`:${criterionId}`)),
-          );
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              criteria: grid.criteria.filter((c) => c.id !== criterionId),
-              cells,
-            }),
-          };
-        }),
-
-      addOption: (gridId, label = '') =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          return { doc: patchGrid(state.doc, gridId, { options: [...grid.options, { id: id(), label }] }) };
-        }),
-
-      updateOption: (gridId, optionId, patch) =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              options: grid.options.map((option) =>
-                option.id === optionId ? { ...option, ...patch } : option,
-              ),
-            }),
-          };
-        }),
-
-      removeOption: (gridId, optionId) =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          const cells = Object.fromEntries(
-            Object.entries(grid.cells).filter(([key]) => !key.startsWith(`${optionId}:`)),
-          );
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              options: grid.options.filter((o) => o.id !== optionId),
-              cells,
-            }),
-          };
-        }),
-
-      setCell: (gridId, optionId, criterionId, patch) =>
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          const key = cellKey(optionId, criterionId);
-          const current = grid.cells[key] ?? { score: 0, note: '' };
-          return {
-            doc: patchGrid(state.doc, gridId, {
-              cells: { ...grid.cells, [key]: { ...current, ...patch } },
-            }),
-          };
-        }),
-
-      promoteOptions: (gridId) => {
-        let created = 0;
-        set((state) => {
-          const grid = state.doc.grids[gridId];
-          if (!grid) return state;
-          const parent = state.doc.nodes.find((n) => n.id === grid.nodeId);
-          if (!parent) return state;
-
-          const nodes = [...state.doc.nodes];
-          const edges = [...state.doc.edges];
-          const options = grid.options.map((option) => {
-            const alreadyLinked = option.nodeId && nodes.some((n) => n.id === option.nodeId);
-            if (alreadyLinked || !option.label.trim()) return option;
-
-            const childId = id();
-            const siblings = nodes.filter((n) => edges.some((e) => e.source === parent.id && e.target === n.id));
-            nodes.push({
-              id: childId,
-              type: 'thought',
-              position: childPosition(parent, siblings),
-              data: { label: option.label, kind: kindForChild(parent.data.kind), note: '' },
-            });
-            edges.push({ id: id(), source: parent.id, target: childId, type: 'thought' });
-            created += 1;
-            return { ...option, nodeId: childId };
-          });
-
-          return {
-            doc: touch(state.doc, {
-              nodes,
-              edges,
-              grids: { ...state.doc.grids, [gridId]: { ...grid, options } },
-            }),
-          };
-        });
-        return created;
-      },
-
-      newDoc: () => set({ doc: createDoc(), selectedNodeId: null, openGridId: null, undo: null }),
-
-      loadDoc: (doc) => set({ doc, selectedNodeId: null, openGridId: null, undo: null }),
+      loadDoc: (doc) =>
+        set({ doc, selectedNodeId: null, compareNodeId: null, weighNodeId: null, undo: null }),
     }),
     {
       name: STORAGE_KEY,
+      version: DOC_VERSION,
+      // an autosave from v1 carries a criteria grid; it becomes each branch's own ledger
+      migrate: (persisted) => {
+        const state = persisted as { doc?: unknown; theme?: 'system' | 'light' | 'dark' };
+        try {
+          return { ...state, doc: migrateDoc(state?.doc) };
+        } catch {
+          // a save we cannot read is worse than a blank canvas only if it takes the app down with it
+          return { ...state, doc: createDoc() };
+        }
+      },
       // selection and drag are view state: restoring them leaves React Flow's idea of
       // what is selected fighting the store's, which loops on the next render
       partialize: (state) => ({

@@ -11,6 +11,17 @@ export interface Verdict {
   margin: number;
 }
 
+export type Side = 'pro' | 'con';
+
+/** one thing for or against a single branch, and how much it counts */
+export interface LedgerItem {
+  id: string;
+  side: Side;
+  text: string;
+  /** 1 (minor) … 5 (decisive). Optional: an unrated line still counts, as one. */
+  weight?: number;
+}
+
 export interface TreeNodeData {
   label: string;
   kind: NodeKind;
@@ -19,7 +30,8 @@ export interface TreeNodeData {
   feeling?: Feeling;
   /** 0-100, how likely this outcome feels */
   likelihood?: number;
-  gridId?: string;
+  /** what's for and against this branch — its own, not shared with its siblings */
+  ledger?: LedgerItem[];
   verdict?: Verdict;
   /** marks this node as part of the path the user is leaning toward */
   chosen?: boolean;
@@ -29,52 +41,17 @@ export interface TreeNodeData {
 export type TreeNode = Node<TreeNodeData, 'thought'>;
 export type TreeEdge = Edge;
 
-export interface Criterion {
-  id: string;
-  label: string;
-  /** 1-10, how much this matters */
-  weight: number;
-}
-
-export interface GridOption {
-  id: string;
-  label: string;
-  /** tree node this option was promoted to / came from */
-  nodeId?: string;
-}
-
-export interface Cell {
-  /** -3 (strong con) … +3 (strong pro) */
-  score: number;
-  note: string;
-}
-
-export type GridMode = 'simple' | 'weighted';
-
-export interface Grid {
-  id: string;
-  /** tree node that owns this comparison */
-  nodeId: string;
-  title: string;
-  criteria: Criterion[];
-  options: GridOption[];
-  /** keyed `${optionId}:${criterionId}` */
-  cells: Record<string, Cell>;
-  mode: GridMode;
-}
+export const DOC_VERSION = 2;
 
 export interface DecisionDoc {
   id: string;
-  version: 1;
+  version: typeof DOC_VERSION;
   question: string;
   createdAt: string;
   updatedAt: string;
   nodes: TreeNode[];
   edges: TreeEdge[];
-  grids: Record<string, Grid>;
 }
-
-export const cellKey = (optionId: string, criterionId: string) => `${optionId}:${criterionId}`;
 
 export const isResolved = (data: TreeNodeData) => data.note.trim().length > 0;
 

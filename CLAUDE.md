@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A client-side app for thinking a hard decision through: a React Flow canvas of branches you write your
-reasoning into, plus a weighted pros/cons grid that opens from any card and stamps its verdict back onto
-it. No backend, no accounts — `localStorage` plus JSON export/import. `GUIDE.md` is the user-facing
-walkthrough and is the fastest way to understand intended behaviour.
+reasoning into; a full-screen page per branch holding what is for it and what is against it; and a
+comparison that reads those pages and stamps its standing back onto the card the branches hang off. No
+backend, no accounts — `localStorage` plus JSON export/import. `GUIDE.md` is the user-facing walkthrough
+and is the fastest way to understand intended behaviour.
 
 ## Commands
 
@@ -28,8 +29,9 @@ Playwright needs Chromium's system libraries once: `sudo npx playwright install-
 ## Architecture
 
 **One store owns the document.** `src/store/useDecisionStore.ts` holds the entire `DecisionDoc` (question,
-React Flow nodes/edges, grids) plus view state (`selectedNodeId`, `openGridId`, `theme`, `undo`). Every
-mutation goes through `touch()` so `updatedAt` cannot drift. React Flow is fully controlled from here.
+React Flow nodes/edges) plus view state (`selectedNodeId`, `weighNodeId`, `compareNodeId`, `theme`,
+`undo`). Every mutation goes through `touch()` so `updatedAt` cannot drift. React Flow is fully controlled
+from here.
 
 **Derived, never stored:** a branch is "resolved" when `data.note` has content (`isResolved` in
 `src/types.ts`). The clarity meter, node styling and edge fading all read that.
@@ -41,10 +43,21 @@ has no parent. The root cannot be deleted and takes no incoming connections; loo
 descendant only when *every* parent it has is also being deleted. `tidyTree` and `pathToRoot` take the first
 parent and guard against cycles.
 
-**Grids** live in `doc.grids`, keyed by id, owned by a node (`grid.nodeId`, `node.data.gridId`). Cells are
-keyed `` `${optionId}:${criterionId}` `` (`cellKey`). All maths is in `src/store/scoring.ts` — totals,
-the deciding criterion, and the "swing" (smallest single weight change that flips the leader). Closing a
-scored, untied grid writes `verdict` onto the owning node.
+**Weighing lives on the node, not beside it.** `data.ledger` is an array of `LedgerItem`
+(`side: 'pro' | 'con'`, `text`, optional `weight` 1–5), so a branch carries its own case and deleting the
+node takes it. `src/store/scoring.ts` is the only maths: `balanceOf(data)` gives for/against/net, and
+`compareBranches(children)` ranks an intersection. **`weight` is optional and an unrated line counts as
+one** (`weightOf` / `UNRATED_WEIGHT`) — never read `item.weight` directly. Closing a comparison of
+branches that are weighed and untied writes `verdict` onto the node they hang off.
+
+**Two full-screen surfaces, one at a time.** `weighNodeId` opens `src/branch/BranchPage.tsx` (the only
+place a ledger is edited) and `compareNodeId` opens `src/compare/CompareView.tsx` (strictly read-only —
+one authoring surface is the point of the design). Escape steps back out in that order, and the
+Delete-key handler in `App.tsx` stands down while either is open.
+
+**Doc version 2.** `migrateDoc` in `src/store/io.ts` turns a v1 criteria grid into per-branch ledgers and
+is wired into both `persist.migrate` and `parseDoc`, so autosave and import take the same path. Bumping
+the shape means bumping `DOC_VERSION` and extending that one function.
 
 **Undo is one step, briefly.** Any action that pushes `undo` stores a whole-document snapshot with a
 timestamp; `src/chrome/UndoBar.tsx` shows it and calls `dismissUndo` after 8s. It is never persisted.
@@ -85,7 +98,8 @@ src/
   store/     document state, scoring, JSON import/export
   canvas/    React Flow canvas, node/edge components, placement maths (layout.ts)
   panel/     the writing surface for a single branch
-  grid/      weighted comparison sheet
+  branch/    that branch's pros and cons, full screen — the only place they are edited
+  compare/   an intersection's branches side by side, read-only
   guide/     first-run walkthrough (own persisted store, own step list)
   chrome/    header, clarity meter, file actions, undo bar
   styles/    tokens.css (palette, type, spacing) and global.css

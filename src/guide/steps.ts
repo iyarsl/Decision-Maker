@@ -11,8 +11,9 @@ export interface GuideSnapshot {
   nodeCount: number;
   writtenCount: number;
   hasSelection: boolean;
-  gridOpen: boolean;
-  scoredCells: number;
+  weighOpen: boolean;
+  compareOpen: boolean;
+  ledgerItems: number;
 }
 
 export interface GuideStep {
@@ -83,44 +84,55 @@ export const GUIDE_STEPS: GuideStep[] = [
     advance: 'manual',
   },
   {
-    id: 'compare',
+    id: 'weigh',
     eyebrow: 'Step 5',
-    title: 'Weigh the options',
-    body: 'Opens a scoring grid for this card, with its branches already in as columns.',
-    anchor: '[data-guide="compare"]',
+    title: 'Weigh the branch on its own',
+    body: 'Every branch has its own page for what is for it and what is against it. Nothing there has to apply to the other branches — it is this one, on its own terms.',
+    anchor: '[data-guide="weigh"]',
     place: 'left',
-    missing: 'Click a card, then Compare options.',
-    done: (s) => s.gridOpen,
+    missing: 'Click a card to open its panel.',
+    done: (s) => s.weighOpen,
     advance: 'auto',
+  },
+  {
+    id: 'ledger',
+    eyebrow: 'Step 5',
+    title: "List what's for it, and what's against",
+    body: 'One line per thing, in your words. No criteria to invent, nothing to score against a list you had to write first.',
+    anchor: '[data-guide="pro"]',
+    place: 'right',
+    missing: 'Open a branch, then Weigh this branch.',
+    done: (s) => s.ledgerItems > 0,
+    advance: 'manual',
   },
   {
     id: 'weights',
     eyebrow: 'Step 5',
-    title: 'Say what matters',
-    body: 'Rows are your reasons — rename them to the real ones. The slider is how much each reason counts, 1 to 10. A row at ×9 outweighs a row at ×3 three times over.',
+    title: 'Say how much each one counts',
+    body: 'Five steps, from barely counts to decisive on its own. A line at 5 outweighs a line at 1 five times over, and the net at the bottom is what is left when both sides are in.',
     anchor: '[data-guide="weight"]',
-    place: 'right',
-    missing: 'Open the grid from a card with Compare options.',
+    place: 'bottom',
+    missing: 'Add a pro or a con first — the weight sits beside it.',
   },
   {
-    id: 'score',
-    eyebrow: 'Step 5',
-    title: 'Score each option',
-    body: 'Seven steps from strong con to strong pro. Hover a cell and why appears — one line on the scores that surprised you is worth more than the number.',
-    anchor: '[data-guide="cell"]',
-    place: 'bottom',
-    missing: 'Open the grid from a card with Compare options.',
-    done: (s) => s.scoredCells > 0,
-    advance: 'manual',
+    id: 'compare',
+    eyebrow: 'Step 6',
+    title: 'Hold the branches up together',
+    body: 'Puts every branch from this card side by side, each with its own case. Nothing is typed twice — it reads what you already wrote on each one.',
+    anchor: '[data-guide="compare"]',
+    place: 'left',
+    missing: 'Click a card with two or more branches, then Compare branches.',
+    done: (s) => s.compareOpen,
+    advance: 'auto',
   },
   {
     id: 'verdict',
     eyebrow: 'Step 6',
     title: 'Read it, do not obey it',
-    body: 'The line here says who leads, by how much, which row decided it, and the smallest weight change that would flip it. A lead of 2 is noise. If the row carrying the win is not one you care about, your weights are wrong. Done stamps the result back on the card.',
+    body: 'The line here says which branch is ahead, by how much, and which single thing is carrying it. A lead of 1 is noise. If what is carrying the lead is not something you actually care about, the weights are wrong. Done stamps the result back on the card.',
     anchor: '[data-guide="verdict"]',
     place: 'top',
-    missing: 'Open the grid from a card with Compare options.',
+    missing: 'Open a comparison from a card with Compare branches.',
   },
   {
     id: 'keep',

@@ -125,13 +125,15 @@ function useSnapshot(): GuideSnapshot {
   const nodeCount = useDecisionStore((s) => s.doc.nodes.length);
   const writtenCount = useDecisionStore((s) => s.doc.nodes.filter((n) => isResolved(n.data)).length);
   const hasSelection = useDecisionStore((s) => s.selectedNodeId !== null);
-  const gridOpen = useDecisionStore((s) => s.openGridId !== null);
-  const scoredCells = useDecisionStore((s) => {
-    const grid = s.openGridId ? s.doc.grids[s.openGridId] : undefined;
-    if (!grid) return 0;
-    return Object.values(grid.cells).filter((cell) => cell.score !== 0).length;
-  });
-  return { hasQuestion, nodeCount, writtenCount, hasSelection, gridOpen, scoredCells };
+  const weighOpen = useDecisionStore((s) => s.weighNodeId !== null);
+  const compareOpen = useDecisionStore((s) => s.compareNodeId !== null);
+  const ledgerItems = useDecisionStore((s) =>
+    s.doc.nodes.reduce(
+      (count, node) => count + (node.data.ledger ?? []).filter((item) => item.text.trim()).length,
+      0,
+    ),
+  );
+  return { hasQuestion, nodeCount, writtenCount, hasSelection, weighOpen, compareOpen, ledgerItems };
 }
 
 /**

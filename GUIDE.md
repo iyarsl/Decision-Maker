@@ -10,12 +10,13 @@ There is a walkthrough inside the app too: it starts by itself on a first visit,
 
 ## The idea in one paragraph
 
-Most decision tools ask you to score things. This one asks you to *write*. A branch you haven't written your reasoning into stays faded and dashed — visibly unfinished. Writing into it makes it solid. The **Clarity** meter in the header counts written branches against total branches, so an unexamined path is obvious at a glance. The scoring grid is the second half: it takes the options you mapped and tells you not just which one wins, but *what* made it win and how easily that could flip.
+Most decision tools ask you to score things. This one asks you to *write*. A branch you haven't written your reasoning into stays faded and dashed — visibly unfinished. Writing into it makes it solid. The **Clarity** meter in the header counts written branches against total branches, so an unexamined path is obvious at a glance. Weighing is the second half: every branch gets its own page of what is for it and what is against it, and comparing branches only ever reads what you wrote on each one.
 
-Two surfaces, linked:
+Three surfaces, linked:
 
 - **The canvas** — map the decision into branches and sub-outcomes, one written thought per branch.
-- **The grid** — open it from any branch to weigh that branch's options against what matters to you.
+- **The branch page** — what's for this branch, what's against it, and how much each line counts.
+- **Compare** — open it from a card to hold its branches up against each other, side by side.
 
 ---
 
@@ -32,13 +33,14 @@ Click a card to select it. A small toolbar appears above it:
 | Button | What it does |
 | --- | --- |
 | **+ Branch** | Adds a child branch below and to the right |
-| **Compare** | Opens the scoring grid for that card's options |
+| **Weigh** | Opens this branch's own page of pros and cons |
+| **Compare** | Holds this card's branches up side by side — needs at least two |
 | **Lean here** | Marks the path you're leaning toward, in amber |
 | **Delete** | Removes the branch and everything under it |
 
 Deleting leaves an **Undo** on offer for a few seconds, so a wrong Delete costs nothing. A branch fed by another card as well as this one stays put — it was never only this one's.
 
-The panel has the same thing as **Delete branch**, and the `Delete` or `Backspace` key removes the card you are looking at — panel open or not, as long as the caret isn't in a text field. The key also removes whatever is selected on the canvas — including a connector, if you click one first. Shift+click to select several and delete them together. Deleting a branch takes its sub-branches and any grid it owned with it. The decision card itself cannot be deleted; **New** clears the board instead.
+The panel has the same thing as **Delete branch**, and the `Delete` or `Backspace` key removes the card you are looking at — panel open or not, as long as the caret isn't in a text field. The key also removes whatever is selected on the canvas — including a connector, if you click one first. Shift+click to select several and delete them together. Deleting a branch takes its sub-branches and everything listed on it with it. The decision card itself cannot be deleted; **New** clears the board instead.
 
 There is **no limit of two branches**. Add as many as the decision actually has — five options, three outcomes under one of them, whatever the shape is. New siblings stack and re-centre under their parent automatically.
 
@@ -70,39 +72,42 @@ Also in the panel:
 
 Press **Esc** or **Close** to dismiss the panel.
 
-## 4. Weigh the options
+## 4. Weigh each branch on its own
 
-Select the card whose options you want to compare — usually the root — and hit **Compare**. The grid opens, seeded with that card's branches as columns. If the card has no branches yet, you get two blank ones.
+Every branch has its own page. Open it with **Weigh** on the card's toolbar, or from the panel — the block reading *What's for it, what's against*, which also shows where the branch currently stands.
 
-**Rows are what matters to you.** Three are there to start (*What it costs me*, *What it gives me*, *How it feels in a year*) — rename them, delete them, add your own with **+ What matters**. Each row has a weight slider, 1–10. A criterion at ×9 counts three times as hard as one at ×3.
+Two columns, and one line per thing:
 
-**Cells are how each option scores on that row.** Seven steps, from **Strong con** to **Strong pro**, with a notch in the middle that never reads as filled — a cell you haven't touched looks untouched. Cons run red, pros run green.
+- **What's for it** — *Better pay. They ship every week.*
+- **What's against** — *Starting over on trust.*
 
-Hover a cell and a **why** link appears: a place to write the one line explaining that score. Notes stick around and the link stays visible once written.
+Write them in your own words. There are no criteria to invent, and nothing has to apply to the other branches: this page is about this branch only.
 
-**Weighted vs Even** (top right) switches between counting weights and treating every row the same. Weighted is the honest default; Even is a useful sanity check — if the winner changes when weights come off, the weights are doing the deciding.
+**Rating a line is optional.** Beside each one are five steps, from *barely counts* to *decisive on its own*. Leave them alone and the line still counts — as one, so an unrated list behaves like a plain tally of pros against cons. Rate the ones where the size is the point. Clicking the step a line is already on takes the rating back off.
 
-### Reading the result
+The bottom of the page keeps the running total: `net = for − against`, with the two bars showing which side is carrying weight. The card on the canvas wears that net as a small badge, so the map shows where the thinking landed without opening anything.
 
-The bar under each column is its total: `Σ score × weight`. The line in the footer says it in words:
+**Back to the map** or **Esc** returns to the canvas, exactly where you left it.
 
-> **Take it** leads by 20 — mostly on *What it gives me*. Move *What it costs me* from ×4 to ×7 and it flips. 58% of the cells are filled.
+## 4b. Compare the branches
 
-Four things to notice there:
+Select the card the branches hang off — usually the root — and hit **Compare**. It needs at least two branches; it is disabled on a leaf.
 
-1. **The margin.** A lead of 2 is noise. A lead of 20 is a decision.
-2. **The deciding criterion.** If the thing carrying the win isn't something you actually care about, your weights are wrong.
-3. **The swing hint.** The smallest single weight change that flips the leader. If a one-notch nudge flips it, the grid isn't telling you much — the options are genuinely close.
-4. **Completeness.** A verdict off 40% of the cells is a guess.
+Every branch gets a column: its net, then its pros and cons with their weights. **Nothing is typed here.** The comparison is only ever a reading of the pages you already wrote, so the two can never disagree. **Weigh this branch** on any column takes you to that page to fix it.
 
-If it comes out level, the footer says so. Usually that means something that matters is missing from the rows.
+The line in the footer says it in words:
 
-### Back to the canvas
+> **Take the offer** is ahead by 5 — carried by *They ship every week*. 1 branch has nothing listed yet.
 
-- **Send options to the canvas** — gives every grid option its own branch, for options you typed in the grid rather than mapping first.
-- **Done** (or **Esc**) — closes the grid and stamps the verdict onto the card you opened it from: *"Grid says Take it, ahead by 20."* Reopening **Compare** on that card brings the same grid back, scores intact.
+Three things to notice there:
 
-Any card can own its own grid. Compare high-level options at the root, then open a separate grid further down for a sub-choice.
+1. **The margin.** A lead of 1 is noise. A lead of 8 is a decision.
+2. **What's carrying it.** If the single line holding up the lead isn't something you actually care about, the rating is wrong — fix it on the branch page, not here.
+3. **What's unweighed.** A standing that beats two branches nobody has listed anything for is not a standing.
+
+If it comes out level, the footer says so. Usually that means something real is missing from one of the lists.
+
+**Done** (or **Esc**) closes it and stamps the standing onto the card: *"Of the branches here, Take the offer leads by 5."*
 
 ## 5. Moving around
 
@@ -130,7 +135,7 @@ Local storage is per-browser and per-device. Nothing syncs. If it matters, expor
 
 ## Writing in Hebrew
 
-Write in whatever language you think in. Every field that holds your words — the question, branch names, your thinking, criteria, option names, cell notes — sets its own direction from what you type, so Hebrew reads right-to-left and an English branch beside it still reads left-to-right. Mixed sentences keep their parts in the right order. The interface itself stays in English.
+Write in whatever language you think in. Every field that holds your words — the question, branch names, your thinking, every pro and con — sets its own direction from what you type, so Hebrew reads right-to-left and an English branch beside it still reads left-to-right. Mixed sentences keep their parts in the right order. The interface itself stays in English.
 
 ---
 
@@ -140,7 +145,7 @@ Write in whatever language you think in. Every field that holds your words — t
 | --- | --- |
 | `Ctrl/Cmd + Enter` | Branch from the selected card |
 | `Delete` / `Backspace` | Delete the selected card and its subtree, or the selected connector |
-| `Esc` | Close the panel or the grid |
+| `Esc` | Step back out: the branch page, then Compare, then the panel |
 | `Tab` / `Shift+Tab` | Move between cards and controls |
 | Double-click card | Open its panel |
 | Double-click canvas | New loose card there |
@@ -154,15 +159,15 @@ Write in whatever language you think in. Every field that holds your words — t
 1. Type the question. Select the root, **+ Branch** three times: *Take the offer*, *Stay and renegotiate*, *Leave with nothing lined up*.
 2. Write into each one. Not a summary — the actual worry. *"Better pay, team ships weekly. But I'd be starting over on trust, and I'd miss the people here."* Clarity goes to 4/4.
 3. Branch off *Take the offer* with two outcome cards: *It's the team they described* (likelihood 60%) and *It's the same job with a new logo* (40%). Write both.
-4. Select the root, **Compare**. Rename the rows to what actually matters: *Money*, *Whether I'd learn anything*, *How far it is from home*. Weight them 4 / 9 / 7.
-5. Score each option, leaving a `why` on the ones that surprise you.
-6. Read the footer. *Take the offer leads by 20 — mostly on Whether I'd learn anything.* That's the real reason. If seeing it in writing makes you flinch, that's information too.
+4. **Weigh** each option in turn. Under *Take the offer*: for — *Better pay*, *I'd learn something again*; against — *Starting over on trust*, *An hour further from home*. Rate only the ones where the size matters: *I'd learn something again* at 5.
+5. Do the same for the other two. Some lines will stay unrated, and that's fine — they still count.
+6. Select the root, **Compare**. Read the footer. *Take the offer is ahead by 5 — carried by I'd learn something again.* That's the real reason. If seeing it in writing makes you flinch, that's information too.
 7. **Done**, then **Lean here** on the branch you're going with. Export the file — in six months, it'll tell you what you actually knew at the time.
 
 ---
 
 ## When it isn't helping
 
-- **Everything scores the same.** Your rows are too abstract. *"Quality of life"* doesn't discriminate; *"How far it is from home"* does.
-- **The winner feels wrong.** Trust the flinch — it usually means a criterion is missing, or a weight is set to what you think you should care about rather than what you do. Fix the grid, don't override it.
+- **Every branch comes out the same.** Your lines are too abstract. *"Quality of life"* doesn't discriminate; *"An hour further from home"* does.
+- **The leader feels wrong.** Trust the flinch — it usually means something is missing from a list, or a line is rated for what you think you should care about rather than what you do. Fix the branch page, don't override it.
 - **You can't write the note.** That's the finding, not a blocker. A branch you can't explain isn't one you've thought about yet.

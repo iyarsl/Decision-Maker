@@ -1,0 +1,301 @@
+.branch-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 22;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  background: var(--fog-veil);
+  backdrop-filter: blur(6px);
+}
+
+.branch-sheet {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: min(1020px, 100%);
+  max-height: 100%;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+
+.branch-sheet:focus {
+  outline: none;
+}
+
+.branch-sheet__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.branch-sheet__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.branch-sheet__back {
+  padding-inline: var(--sp-2);
+}
+
+.branch-sheet__title {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--display);
+  font-size: var(--step-2);
+  font-weight: 600;
+  font-stretch: 88%;
+  letter-spacing: -0.015em;
+  color: var(--clear);
+}
+
+.branch-sheet__title::placeholder {
+  color: var(--mist-faint);
+  font-weight: 400;
+}
+
+.branch-sheet__title:focus {
+  outline: none;
+  box-shadow: 0 2px 0 var(--focus);
+}
+
+/* the thinking is context here, not a field — it is written in the panel */
+.branch-sheet__note {
+  max-width: 78ch;
+  color: var(--mist);
+  font-family: var(--reading);
+  font-size: var(--step--1);
+  line-height: 1.55;
+}
+
+.branch-scroll {
+  overflow: auto;
+  padding: var(--sp-5);
+}
+
+/* ---------- for and against ---------- */
+
+.ledger {
+  display: grid;
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .ledger {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ledger__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--edge);
+}
+
+.ledger__side--pro {
+  border-left-color: var(--gain);
+}
+
+.ledger__side--con {
+  border-left-color: var(--risk);
+}
+
+.ledger__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.ledger__total {
+  color: var(--mist);
+  font-size: var(--step--1);
+}
+
+.ledger__side--pro .ledger__total {
+  color: var(--gain);
+}
+
+.ledger__side--con .ledger__total {
+  color: var(--risk);
+}
+
+.ledger__empty {
+  color: var(--mist-faint);
+  font-family: var(--data);
+  font-size: var(--step--2);
+  line-height: 1.5;
+}
+
+.ledger__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ledger__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.ledger__text {
+  min-width: 0;
+  padding: 0.4rem var(--sp-3);
+  font-family: var(--reading);
+  font-size: var(--step-0);
+}
+
+.ledger__weight {
+  display: flex;
+  gap: 3px;
+}
+
+/* five steps, filled up to the weight — a bar you read at a glance, not a slider you drag */
+.ledger__pip {
+  width: 16px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--edge);
+  border-radius: 2px;
+  background: var(--ground-deep);
+  transition: background 140ms var(--ease), border-color 140ms var(--ease);
+}
+
+.ledger__pip:hover {
+  border-color: var(--mist-faint);
+}
+
+/* rating is optional: an unrated line reads as unset rather than as a zero */
+.ledger__weight.is-unrated .ledger__pip {
+  border-style: dashed;
+  border-color: var(--edge-soft);
+}
+
+.ledger__side--pro .ledger__pip.is-on {
+  background: var(--gain);
+  border-color: var(--gain);
+}
+
+.ledger__side--con .ledger__pip.is-on {
+  background: var(--risk);
+  border-color: var(--risk);
+}
+
+/* sits in the list so it lines up with the weights below it, and takes no row of its own */
+.ledger__scale-caption {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--sp-3);
+  color: var(--mist-faint);
+  font-family: var(--data);
+  font-size: var(--step--2);
+  letter-spacing: 0.12em;
+}
+
+.ledger__scale-caption span {
+  grid-column: 2;
+  text-align: center;
+}
+
+.ledger__remove {
+  padding: 0 var(--sp-1);
+  color: var(--mist-faint);
+  font-size: var(--step-1);
+  line-height: 1;
+}
+
+.ledger__remove:hover {
+  color: var(--risk);
+}
+
+.ledger__add {
+  align-self: start;
+}
+
+/* ---------- what it comes to ---------- */
+
+.branch-sheet__foot {
+  padding: var(--sp-3) var(--sp-5) var(--sp-4);
+  border-top: 1px solid var(--edge-soft);
+  background: color-mix(in srgb, var(--ground-deep) 55%, transparent);
+}
+
+.ledger__scales {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--sp-2);
+}
+
+.ledger__scale {
+  display: block;
+  height: 6px;
+  min-width: 2px;
+  border-radius: 3px;
+  transition: width 320ms var(--ease-settle);
+}
+
+.ledger__scale--for {
+  background: var(--gain);
+}
+
+.ledger__scale--against {
+  background: var(--risk);
+}
+
+.ledger__figures {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  color: var(--mist-faint);
+  font-size: var(--step--1);
+}
+
+.ledger__figures strong {
+  color: var(--mist);
+  font-weight: 500;
+}
+
+.ledger__figures .is-for {
+  color: var(--gain);
+}
+
+.ledger__figures .is-against {
+  color: var(--risk);
+}
+
+@media (max-width: 860px) {
+  .branch-scrim {
+    padding: 0;
+  }
+
+  .branch-sheet {
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    border: none;
+  }
+
+  .branch-sheet__head,
+  .branch-scroll,
+  .branch-sheet__foot {
+    padding-inline: var(--sp-4);
+  }
+}

@@ -109,6 +109,43 @@
   background: color-mix(in srgb, var(--ground-deep) 60%, transparent);
 }
 
+/* ---------- the way through to the branch's own page ---------- */
+
+.panel__weigh {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  text-align: left;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-md);
+  background: var(--ground-deep);
+  transition: border-color 160ms var(--ease), background 160ms var(--ease);
+}
+
+.panel__weigh:hover {
+  border-color: var(--mist-faint);
+  background: var(--panel-raised);
+}
+
+.panel__weigh-figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+}
+
+.panel__weigh-figures .is-for {
+  color: var(--gain);
+}
+
+.panel__weigh-figures .is-against {
+  color: var(--risk);
+}
+
 /* ---------- segmented control ---------- */
 
 .segmented {

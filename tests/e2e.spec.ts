@@ -26,6 +26,24 @@ async function addBranch(page: Page, parentLabel: string, childLabel: string) {
   await page.keyboard.press('Escape');
 }
 
+/** list what's for and against one branch on its own page, weighting each line 1-5 */
+async function weigh(page: Page, label: string, items: ['pro' | 'con', string, number][]) {
+  await nodeCard(page, label).first().click();
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  const sheet = page.getByRole('dialog', { name: 'Weigh this branch' });
+  await expect(sheet).toBeVisible();
+  for (const [side, text, weight] of items) {
+    await page.getByRole('button', { name: side === 'pro' ? '+ Add a pro' : '+ Add a con' }).click();
+    const row = page.locator(`.ledger__side--${side} .ledger__row`).last();
+    await row.locator('.ledger__text').fill(text);
+    await row.getByRole('radio', { name: String(weight), exact: true }).click();
+  }
+  // out of the page, then out of the panel
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+  await page.keyboard.press('Escape');
+}
+
 test('map a decision, write into it, and weigh the options', async ({ page }) => {
   await fresh(page);
 
@@ -47,42 +65,121 @@ test('map a decision, write into it, and weigh the options', async ({ page }) =>
   // clarity meter counts written branches (1 of 4)
   await expect(page.locator('.clarity__label .data')).toHaveText('1/4');
 
-  // the grid opens from the node and seeds itself with that node's branches
-  await nodeCard(page, QUESTION).click();
-  await page.getByRole('button', { name: 'Compare options' }).click();
-  const sheet = page.getByRole('dialog', { name: 'Compare options' });
+  // each branch carries its own case: Take the offer nets 5+3-2 = +6
+  await weigh(page, 'Take the offer', [
+    ['pro', 'Better pay', 5],
+    ['pro', 'Ships weekly', 3],
+    ['con', 'Starting over on trust', 2],
+  ]);
+  await expect(nodeCard(page, 'Take the offer').locator('.node-card__net')).toHaveText('+6');
+
+  // Stay and renegotiate nets 4-3 = +1
+  await weigh(page, 'Stay and renegotiate', [
+    ['pro', 'Keep the people', 4],
+    ['con', 'Same ceiling next year', 3],
+  ]);
+  await expect(nodeCard(page, 'Stay and renegotiate').locator('.node-card__net')).toHaveText('+1');
+
+  // compare reads those lists — nothing is typed twice
+  await nodeCard(page, QUESTION).first().click();
+  await page.getByRole('button', { name: 'Compare branches' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Compare branches' });
   await expect(sheet).toBeVisible();
-  await expect(sheet.locator('.option-head__label')).toHaveCount(3);
+  await expect(sheet.locator('.compare-col')).toHaveCount(3);
+  await expect(sheet.locator('.compare-col.is-leading .compare-col__label')).toHaveText('Take the offer');
+  await expect(sheet.locator('.readout')).toContainText('is ahead by 5');
+  await expect(sheet.locator('.readout')).toContainText('Better pay');
+  await expect(sheet.locator('.readout')).toContainText('1 branch has nothing listed yet');
 
-  // weights: 2 / 8 / 5
-  const weights = sheet.getByRole('slider');
-  await weights.nth(0).fill('2');
-  await weights.nth(1).fill('8');
-  await weights.nth(2).fill('5');
-
-  const score = async (option: string, criterion: string, label: string) => {
-    await sheet
-      .getByRole('radiogroup', { name: `${option} on ${criterion}` })
-      .getByRole('radio', { name: label, exact: true })
-      .click();
-  };
-
-  // Take the offer:        -2*2 + 3*8 + 1*5  = 25
-  await score('Take the offer', 'What it costs me', 'Con');
-  await score('Take the offer', 'What it gives me', 'Strong pro');
-  await score('Take the offer', 'How it feels in a year', 'Slight pro');
-  // Stay and renegotiate:   3*2 + -1*8 + 1*5 = 3
-  await score('Stay and renegotiate', 'What it costs me', 'Strong pro');
-  await score('Stay and renegotiate', 'What it gives me', 'Slight con');
-  await score('Stay and renegotiate', 'How it feels in a year', 'Slight pro');
-
-  await expect(sheet.locator('.option-head.is-winner .option-head__label')).toHaveValue('Take the offer');
-  await expect(sheet.locator('.readout')).toContainText('leads by 22');
-  await expect(sheet.locator('.readout')).toContainText('What it gives me');
-
-  // closing stamps the verdict back onto the node it belongs to
+  // closing stamps the standing back onto the card the branches hang off
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await expect(nodeCard(page, QUESTION).locator('.node-card__verdict')).toContainText('Take the offer');
+  await expect(nodeCard(page, QUESTION).first().locator('.node-card__verdict')).toContainText(
+    'Take the offer',
+  );
+});
+
+test('rating a line is optional — an unrated one still counts, as one', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  const sheet = page.getByRole('dialog', { name: 'Weigh this branch' });
+
+  // two pros, neither rated: a plain tally
+  await page.getByRole('button', { name: '+ Add a pro' }).click();
+  await sheet.locator('.ledger__side--pro .ledger__row').last().locator('.ledger__text').fill('Better pay');
+  await page.getByRole('button', { name: '+ Add a pro' }).click();
+  await sheet.locator('.ledger__side--pro .ledger__row').last().locator('.ledger__text').fill('Ships weekly');
+  await expect(sheet.locator('.ledger__weight.is-unrated')).toHaveCount(2);
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2');
+
+  // rating one says more; clicking the same step again takes the rating back off
+  const first = sheet.locator('.ledger__side--pro .ledger__row').first();
+  await first.getByRole('radio', { name: '4', exact: true }).click();
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +5');
+  await first.getByRole('radio', { name: '4', exact: true }).click();
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2');
+});
+
+test('a v1 grid becomes each branch its own pros and cons', async ({ page }) => {
+  await fresh(page);
+
+  // a save from the criteria-grid version: one criterion, two options, three scored cells
+  await page.evaluate(() => {
+    const doc = {
+      id: 'doc1',
+      version: 1,
+      question: 'Should I leave the job?',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      nodes: [
+        { id: 'root', type: 'thought', position: { x: 0, y: 0 }, data: { label: 'Should I leave the job?', kind: 'decision', note: '', gridId: 'g1' } },
+        { id: 'a', type: 'thought', position: { x: 300, y: -80 }, data: { label: 'Take the offer', kind: 'option', note: 'written' } },
+        { id: 'b', type: 'thought', position: { x: 300, y: 80 }, data: { label: 'Stay', kind: 'option', note: 'written' } },
+      ],
+      edges: [
+        { id: 'e1', source: 'root', target: 'a', type: 'thought' },
+        { id: 'e2', source: 'root', target: 'b', type: 'thought' },
+      ],
+      grids: {
+        g1: {
+          id: 'g1',
+          nodeId: 'root',
+          title: 'Compare the options',
+          criteria: [
+            { id: 'c1', label: 'What it gives me', weight: 8 },
+            { id: 'c2', label: 'What it costs me', weight: 4 },
+          ],
+          options: [
+            { id: 'o1', label: 'Take the offer', nodeId: 'a' },
+            { id: 'o2', label: 'Stay', nodeId: 'b' },
+          ],
+          cells: {
+            'o1:c1': { score: 3, note: 'the team ships' },
+            'o1:c2': { score: -2, note: '' },
+            'o2:c1': { score: 1, note: '' },
+          },
+          mode: 'weighted',
+        },
+      },
+    };
+    window.localStorage.setItem(
+      'decision-maker:v1',
+      JSON.stringify({ state: { doc, theme: 'system' }, version: 1 }),
+    );
+  });
+  await page.reload();
+
+  // a strong pro carried its note across, and the score picked the side and the weight
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  const sheet = page.getByRole('dialog', { name: 'Weigh this branch' });
+  await expect(sheet.locator('.ledger__side--pro .ledger__text')).toHaveValue(
+    'What it gives me — the team ships',
+  );
+  await expect(sheet.locator('.ledger__side--con .ledger__text')).toHaveValue('What it costs me');
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2'); // 5 for, 3 against
 });
 
 test('autosaves, exports, and reopens a decision file', async ({ page }, testInfo) => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDecisionStore } from '../store/useDecisionStore';
 import { isResolved, KIND_LABEL, type Feeling, type NodeKind } from '../types';
+import { balanceOf } from '../store/scoring';
 import { FEELINGS } from './feelings';
 import './panel.css';
 
@@ -11,11 +12,16 @@ export function ThoughtPanel() {
   const node = useDecisionStore((s) => s.doc.nodes.find((n) => n.id === s.selectedNodeId));
   const updateNodeData = useDecisionStore((s) => s.updateNodeData);
   const addChild = useDecisionStore((s) => s.addChild);
-  const openGridForNode = useDecisionStore((s) => s.openGridForNode);
+  const openCompare = useDecisionStore((s) => s.openCompare);
+  const openWeigh = useDecisionStore((s) => s.openWeigh);
   const toggleChosen = useDecisionStore((s) => s.toggleChosen);
   const selectNode = useDecisionStore((s) => s.selectNode);
   const deleteNode = useDecisionStore((s) => s.deleteNode);
   const isRoot = useDecisionStore((s) => s.doc.nodes[0]?.id === s.selectedNodeId);
+  // comparing is about an intersection: it needs at least two branches to hold apart
+  const branchCount = useDecisionStore(
+    (s) => s.doc.edges.filter((e) => e.source === s.selectedNodeId).length,
+  );
   const labelRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,6 +32,7 @@ export function ThoughtPanel() {
 
   const { data } = node;
   const resolved = isResolved(data);
+  const balance = balanceOf(data);
 
   return (
     <aside className="panel enter" aria-label={`Thinking on ${data.label || 'this branch'}`}>
@@ -82,6 +89,24 @@ export function ThoughtPanel() {
           <span className="panel__help">A written branch comes out of the fog.</span>
         </label>
 
+        {/* the case itself is written on its own page — this is the standing, and the way in */}
+        <button className="panel__weigh" data-guide="weigh" onClick={() => openWeigh(nodeId)}>
+          <span className="eyebrow">What's for it, what's against</span>
+          {balance.count === 0 ? (
+            <span className="panel__help">Nothing listed yet — weigh this branch</span>
+          ) : (
+            <span className="panel__weigh-figures data">
+              <strong className={balance.net < 0 ? 'is-against' : 'is-for'}>
+                net {balance.net > 0 ? '+' : ''}
+                {balance.net}
+              </strong>
+              <span>
+                {balance.pros.length} for · {balance.cons.length} against
+              </span>
+            </span>
+          )}
+        </button>
+
         <fieldset className="panel__field">
           <legend className="eyebrow">Gut read</legend>
           <div className="feelings">
@@ -128,7 +153,8 @@ export function ThoughtPanel() {
 
         {data.verdict && (
           <p className="panel__verdict data">
-            Grid says <strong><bdi>{data.verdict.winnerLabel}</bdi></strong>, ahead by {data.verdict.margin}.
+            Of the branches here, <strong><bdi>{data.verdict.winnerLabel}</bdi></strong> leads by{' '}
+            {data.verdict.margin}.
           </p>
         )}
       </div>
@@ -137,8 +163,18 @@ export function ThoughtPanel() {
         <button className="btn" data-guide="branch" onClick={() => addChild(nodeId)}>
           + Branch from here
         </button>
-        <button className="btn" data-guide="compare" onClick={() => openGridForNode(nodeId)}>
-          Compare options
+        <button
+          className="btn"
+          data-guide="compare"
+          disabled={branchCount < 2}
+          onClick={() => openCompare(nodeId)}
+          title={
+            branchCount < 2
+              ? 'Compare needs at least two branches from this card'
+              : 'Put the branches from here side by side'
+          }
+        >
+          Compare branches
         </button>
         <button
           className={data.chosen ? 'btn btn--signal' : 'btn'}

@@ -99,6 +99,19 @@
   font-size: var(--step--2);
 }
 
+/* what this branch weighs on its own — the sign is the whole message */
+.node-card__net {
+  padding: 1px var(--sp-2);
+  border: 1px solid color-mix(in srgb, var(--gain) 45%, transparent);
+  border-radius: 999px;
+  color: var(--gain);
+}
+
+.node-card__net.is-against {
+  border-color: color-mix(in srgb, var(--risk) 45%, transparent);
+  color: var(--risk);
+}
+
 .node-card__verdict {
   color: var(--gain);
   overflow: hidden;
