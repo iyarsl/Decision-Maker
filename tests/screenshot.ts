@@ -107,6 +107,16 @@ async function capture(theme: 'dark' | 'light', width: number, height: number, t
   await page.getByRole('button', { name: 'Compare branches' }).click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: `${OUT}/${tag}-compare-${theme}.png` });
+  await page.keyboard.press('Escape');
+
+  // the finished decision, with the editing put away
+  await page.getByRole('button', { name: 'Decide' }).click();
+  await page.getByRole('button', { name: 'fit view' }).click();
+  await page.waitForTimeout(400);
+  // the root wears the standing by now, so match the option card itself
+  await page.locator('.node-card--option').filter({ hasText: 'Take the offer' }).click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${OUT}/${tag}-decide-${theme}.png` });
 
   await browser.close();
 }

@@ -20,7 +20,7 @@ export function BranchBrief({ nodeId, data }: { nodeId: string; data: TreeNodeDa
   const feeling = data.feeling === undefined ? undefined : FEELINGS.find((f) => f.value === data.feeling);
 
   return (
-    <aside className="panel enter" aria-label={`Reading ${data.label || 'this branch'}`}>
+    <aside className="panel panel--brief enter" aria-label={`Reading ${data.label || 'this branch'}`}>
       <header className="panel__head">
         <div>
           <span className="eyebrow">{KIND_LABEL[data.kind]}</span>
@@ -47,7 +47,10 @@ export function BranchBrief({ nodeId, data }: { nodeId: string; data: TreeNodeDa
         {balance.count > 0 ? (
           <>
             <BalanceBar balance={balance} />
-            <LedgerReadout balance={balance} />
+            {/* both sides at once: reading a case means seeing what answers what */}
+            <div className="brief__case">
+              <LedgerReadout balance={balance} />
+            </div>
           </>
         ) : (
           <p className="panel__help">Nothing was listed for or against it.</p>

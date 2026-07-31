@@ -111,8 +111,26 @@
 
 /* ---------- reading a branch while deciding ---------- */
 
+/* nothing here is a form, so the drawer can afford the width that puts both sides of the
+   case on screen at once */
+.panel--brief {
+  width: min(620px, calc(100vw - 2rem));
+}
+
 .brief {
   gap: var(--sp-3);
+}
+
+.brief__case {
+  display: grid;
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+@media (min-width: 560px) {
+  .brief__case {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .brief__label {
