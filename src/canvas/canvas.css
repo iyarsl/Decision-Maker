@@ -198,11 +198,6 @@
   pointer-events: none;
 }
 
-.canvas-hint__pending {
-  margin-top: var(--sp-1);
-  color: var(--mist);
-}
-
 /* ---------- connectors ---------- */
 
 /* The dot is small on purpose, but the thing you have to hit should not be. A generous
@@ -262,7 +257,6 @@
 }
 
 .canvas-hint__selection {
-  margin-top: var(--sp-1);
   color: var(--clear);
 }
 

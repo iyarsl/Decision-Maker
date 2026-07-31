@@ -119,7 +119,6 @@ export function Canvas() {
     [],
   );
 
-  const unwritten = nodes.filter((node) => !isResolved(node.data)).length;
   const selectedCount = nodes.filter((node) => node.selected).length;
 
   return (
@@ -177,19 +176,15 @@ export function Canvas() {
           </button>
         </Panel>
 
-        <Panel position="top-left" className="canvas-hint">
-          <p className="data">Drag to move · ctrl-click for several · double-click for a branch</p>
-          {selectedCount > 1 && (
+        {/* only what is true right now — the controls teach themselves, the Clarity meter
+            already counts what is unwritten, and the walkthrough covers the rest */}
+        {selectedCount > 1 && (
+          <Panel position="top-left" className="canvas-hint">
             <p className="canvas-hint__selection data" role="status">
               {selectedCount} branches held — drag one, they all move
             </p>
-          )}
-          {unwritten > 0 && (
-            <p className="canvas-hint__pending data">
-              {unwritten} branch{unwritten === 1 ? '' : 'es'} still unwritten
-            </p>
-          )}
-        </Panel>
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );
