@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDecisionStore } from '../store/useDecisionStore';
-import { isResolved } from '../types';
 import { GUIDE_STEPS, type GuideSnapshot, type Place } from './steps';
 import { useGuide } from './useGuide';
 import './guide.css';
@@ -123,7 +122,11 @@ function Tour() {
 function useSnapshot(): GuideSnapshot {
   const hasQuestion = useDecisionStore((s) => s.doc.question.trim().length > 0);
   const nodeCount = useDecisionStore((s) => s.doc.nodes.length);
-  const writtenCount = useDecisionStore((s) => s.doc.nodes.filter((n) => isResolved(n.data)).length);
+  // the walkthrough is waiting for the user to write something, and a decision card counts
+  // as clear without a word on it — so this one asks the narrower question
+  const writtenCount = useDecisionStore(
+    (s) => s.doc.nodes.filter((n) => n.data.note.trim().length > 0).length,
+  );
   const hasSelection = useDecisionStore((s) => s.selectedNodeId !== null);
   const weighOpen = useDecisionStore((s) => s.weighNodeId !== null);
   const compareOpen = useDecisionStore((s) => s.compareNodeId !== null);

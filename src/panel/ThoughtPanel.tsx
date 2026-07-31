@@ -40,7 +40,11 @@ export function ThoughtPanel() {
         <div>
           <span className="eyebrow">{KIND_LABEL[data.kind]}</span>
           <p className={resolved ? 'panel__state panel__state--clear data' : 'panel__state data'}>
-            {resolved ? 'Thought through' : 'Not written yet'}
+            {data.kind === 'decision'
+              ? 'A fork — the thinking sits below'
+              : resolved
+                ? 'Thought through'
+                : 'Not written yet'}
           </p>
         </div>
         <button className="btn btn--quiet" onClick={() => selectNode(null)} aria-label="Close">
