@@ -129,23 +129,6 @@
   background: var(--panel-raised);
 }
 
-.panel__weigh-figures {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  color: var(--mist-faint);
-  font-size: var(--step--2);
-}
-
-.panel__weigh-figures .is-for {
-  color: var(--gain);
-}
-
-.panel__weigh-figures .is-against {
-  color: var(--risk);
-}
-
 /* ---------- segmented control ---------- */
 
 .segmented {

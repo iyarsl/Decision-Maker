@@ -91,7 +91,9 @@ Write them in your own words. There are no criteria to invent, and nothing has t
 
 This is the difference between a list and an argument: a pro you already have a reply to shouldn't keep its full size just because you wrote it down first.
 
-The bottom of the page keeps the running total: `net = for − against`, with the two bars showing which side is carrying weight. The card on the canvas wears that net as a small badge, so the map shows where the thinking landed without opening anything.
+The bottom of the page keeps the running total: `net = for − against`, with the two bars showing which side is carrying weight.
+
+**The map does not show that total.** A card carries a small two-tone strip — how the weight sits, for against against — and the count of lines on each side. That is a shape you can read at a glance and argue with; a number like *+6* is a verdict, and a verdict off four lines you wrote in a hurry is worth less than it looks. The total is one click away, on the page where the lines are on screen beside it.
 
 **Back to the map** or **Esc** returns to the canvas, exactly where you left it.
 

@@ -10,8 +10,9 @@ Three linked surfaces:
 - **Branch page** — every branch has its own page of what is for it and what is against it, one line per
   thing, in your words. Rating a line is optional: five steps from *barely counts* to *decisive*, and an
   unrated line still counts, as one. Any line can be answered — the con that comes straight back at a pro
-  sits under it and takes weight off it, rather than becoming a con of its own. The running net rides back
-  onto the card.
+  sits under it and takes weight off it, rather than becoming a con of its own. The card on the map shows
+  which way the weight sits and how many lines are on each side — the totals stay on the page where the
+  lines are there to back them up.
 - **Compare** — hold a card's branches up side by side. It is a reading of the pages you already wrote,
   never a second place to type, and it says which branch leads, by how much, and what is carrying it.
 

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDecisionStore } from '../store/useDecisionStore';
 import { isResolved, KIND_LABEL, type Feeling, type NodeKind } from '../types';
 import { balanceOf } from '../store/scoring';
+import { BalanceBar } from '../branch/BalanceBar';
 import { FEELINGS } from './feelings';
 import './panel.css';
 
@@ -99,15 +100,7 @@ export function ThoughtPanel() {
           {balance.count === 0 ? (
             <span className="panel__help">Nothing listed yet — weigh this branch</span>
           ) : (
-            <span className="panel__weigh-figures data">
-              <strong className={balance.net < 0 ? 'is-against' : 'is-for'}>
-                net {balance.net > 0 ? '+' : ''}
-                {balance.net}
-              </strong>
-              <span>
-                {balance.pros.length} for · {balance.cons.length} against
-              </span>
-            </span>
+            <BalanceBar balance={balance} />
           )}
         </button>
 

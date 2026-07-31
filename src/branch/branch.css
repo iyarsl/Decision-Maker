@@ -82,6 +82,39 @@
   background: var(--ground-deep);
 }
 
+/* ---------- which way the weight sits (card and panel) ---------- */
+
+.balance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.balance__bar {
+  display: flex;
+  gap: 2px;
+  height: 4px;
+}
+
+.balance__side {
+  display: block;
+  min-width: 3px;
+  border-radius: 2px;
+}
+
+.balance__side--for {
+  background: var(--gain);
+}
+
+.balance__side--against {
+  background: var(--risk);
+}
+
+.balance__counts {
+  color: var(--mist-faint);
+  font-size: var(--step--2);
+}
+
 /* ---------- for and against ---------- */
 
 .ledger {

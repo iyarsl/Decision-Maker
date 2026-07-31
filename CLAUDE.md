@@ -54,6 +54,11 @@ other side — so `weightOf(item)` is the only correct way to ask what a line co
 for the rating controls alone. Never read `item.weight` directly. Closing a comparison of
 branches that are weighed and untied writes `verdict` onto the node they hang off.
 
+**A card never shows a total.** `BalanceBar` (`src/branch/BalanceBar.tsx`, used by the node card and the
+panel) draws the share of weight for and against plus the count of lines on each side. The net figure
+belongs to the branch page footer and to Compare, where the lines that produced it are on screen. Do not
+put a score back on the card.
+
 **Two full-screen surfaces, one at a time.** `weighNodeId` opens `src/branch/BranchPage.tsx` (the only
 place a ledger is edited) and `compareNodeId` opens `src/compare/CompareView.tsx` (strictly read-only —
 one authoring surface is the point of the design). Escape steps back out in that order, and the

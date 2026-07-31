@@ -2,6 +2,7 @@ import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/react';
 import { isResolved, KIND_LABEL, type TreeNode } from '../../types';
 import { useDecisionStore } from '../../store/useDecisionStore';
 import { balanceOf } from '../../store/scoring';
+import { BalanceBar } from '../../branch/BalanceBar';
 import { FEELINGS } from '../../panel/feelings';
 import { NODE_WIDTH } from '../layout';
 
@@ -93,23 +94,13 @@ export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
           </p>
         )}
 
-        {(balance.count > 0 || data.verdict || feeling || data.likelihood !== undefined) && (
+        <BalanceBar balance={balance} />
+
+        {(data.verdict || feeling || data.likelihood !== undefined) && (
           <footer className="node-card__foot data">
-            {balance.count > 0 && (
-              <span
-                className={
-                  balance.net < 0 ? 'node-card__net is-against' : 'node-card__net'
-                }
-                title={`${balance.forTotal} for, ${balance.againstTotal} against`}
-              >
-                {balance.net > 0 ? '+' : ''}
-                {balance.net}
-              </span>
-            )}
             {data.verdict && (
               <span className="node-card__verdict" title={`Leads by ${data.verdict.margin}`}>
-                <bdi>{data.verdict.winnerLabel}</bdi> · {data.verdict.score > 0 ? '+' : ''}
-                {data.verdict.score}
+                <bdi>{data.verdict.winnerLabel}</bdi> leads
               </span>
             )}
             {data.likelihood !== undefined && <span>{data.likelihood}% likely</span>}
