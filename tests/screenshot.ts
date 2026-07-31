@@ -8,7 +8,8 @@ import { mkdir } from 'node:fs/promises';
 const BASE = process.env.BASE_URL ?? 'http://localhost:5183';
 const OUT = '.screens';
 
-type Item = ['pro' | 'con', string, number];
+/** side, the line, its weight, and the answer that comes back at it */
+type Item = ['pro' | 'con', string, number, [string, number]?];
 
 const SEED = {
   question: 'Should I leave the job?',
@@ -17,9 +18,9 @@ const SEED = {
       label: 'Take the offer',
       note: 'The pay is better and the team ships every week. I would be starting over on trust, and I would miss the people here.',
       ledger: [
-        ['pro', 'Better pay', 4],
+        ['pro', 'Better pay — 22% on base, and the review cycle is twice a year', 4, ['Rent there eats most of it', 3]],
         ['pro', 'They ship every week', 5],
-        ['con', 'Starting over on trust', 3],
+        ['con', 'Starting over on trust with a team I have never met', 3],
       ] as Item[],
     },
     {
@@ -58,11 +59,17 @@ async function build(page: Page) {
 
     if (branch.ledger.length) {
       await page.getByRole('button', { name: "What's for it, what's against" }).click();
-      for (const [side, text, weight] of branch.ledger) {
+      for (const [side, text, weight, answer] of branch.ledger) {
         await page.getByRole('button', { name: side === 'pro' ? '+ Add a pro' : '+ Add a con' }).click();
-        const row = page.locator(`.ledger__side--${side} .ledger__row`).last();
+        const row = page.locator(`.ledger__side--${side} .ledger__item`).last();
         await row.locator('.ledger__text').fill(text);
         await row.getByRole('radio', { name: String(weight), exact: true }).click();
+        if (answer) {
+          await row.getByRole('button', { name: side === 'pro' ? 'But…' : 'Even so…' }).click();
+          const counter = row.locator('.counter').last();
+          await counter.locator('.counter__text').fill(answer[0]);
+          await counter.getByRole('radio', { name: String(answer[1]), exact: true }).click();
+        }
       }
       await page.keyboard.press('Escape');
     }

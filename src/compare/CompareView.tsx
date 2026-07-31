@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useDecisionStore, childrenOf } from '../store/useDecisionStore';
-import { compareBranches, type Standing } from '../store/scoring';
+import { compareBranches, statedWeight, weightOf, type Standing } from '../store/scoring';
 import type { LedgerItem } from '../types';
 import './compare.css';
 
@@ -195,20 +195,35 @@ function Side({ items, side, total }: { items: LedgerItem[]; side: 'pro' | 'con'
         {side === 'pro' ? 'For' : 'Against'} <span className="data">{total}</span>
       </p>
       <ul className="compare-side__list">
-        {items.map((item) => (
-          <li key={item.id} className="compare-side__item">
-            <span className="compare-side__text" dir="auto">
-              <bdi>{item.text}</bdi>
-            </span>
-            {/* unrated lines carry no number: they count as one, and saying "×1" would
-                claim the user decided that */}
-            {item.weight !== undefined && (
-              <span className="compare-side__weight data" aria-label={`counts ${item.weight} of 5`}>
-                ×{item.weight}
-              </span>
-            )}
-          </li>
-        ))}
+        {items.map((item) => {
+          const answers = (item.counters ?? []).filter((counter) => counter.text.trim());
+          const counted = weightOf(item);
+          return (
+            <li key={item.id} className="compare-side__item">
+              <p className="compare-side__line">
+                <span className="compare-side__text" dir="auto">
+                  <bdi>{item.text}</bdi>
+                </span>
+                {/* an unrated line with nothing against it carries no number: it counts as
+                    one, and "×1" would claim the user decided that */}
+                {(item.weight !== undefined || answers.length > 0) && (
+                  <span className="compare-side__weight data" aria-label={`counts ${counted}`}>
+                    ×{counted}
+                  </span>
+                )}
+              </p>
+
+              {answers.map((counter) => (
+                <p key={counter.id} className={`compare-side__counter compare-side__counter--${side}`}>
+                  <span dir="auto">
+                    <bdi>{counter.text}</bdi>
+                  </span>
+                  <span className="compare-side__weight data">−{statedWeight(counter)}</span>
+                </p>
+              ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

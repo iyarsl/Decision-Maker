@@ -9,7 +9,9 @@ Three linked surfaces:
   fog. The header meter shows how much of the tree you have actually thought about.
 - **Branch page** — every branch has its own page of what is for it and what is against it, one line per
   thing, in your words. Rating a line is optional: five steps from *barely counts* to *decisive*, and an
-  unrated line still counts, as one. The running net rides back onto the card.
+  unrated line still counts, as one. Any line can be answered — the con that comes straight back at a pro
+  sits under it and takes weight off it, rather than becoming a con of its own. The running net rides back
+  onto the card.
 - **Compare** — hold a card's branches up side by side. It is a reading of the pages you already wrote,
   never a second place to type, and it says which branch leads, by how much, and what is carrying it.
 
@@ -70,5 +72,6 @@ src/
   styles/    design tokens and base styles
 ```
 
-Scoring: `net(branch) = Σ pro weights − Σ con weights`, weights 1…5, unrated lines counting as one. A
-comparison ranks a card's branches by net; the margin is the leader's lead over the runner-up.
+Scoring: a line counts `max(0, its weight − the weights answering it)`, weights 1…5 with unrated counting
+as one; `net(branch) = Σ pros − Σ cons`. A comparison ranks a card's branches by net, and the margin is the
+leader's lead over the runner-up.

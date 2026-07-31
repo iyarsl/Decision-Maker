@@ -1,4 +1,4 @@
-import type { LedgerItem, TreeNode, TreeNodeData } from '../types';
+import type { Counter, LedgerItem, TreeNode, TreeNodeData } from '../types';
 
 export const MIN_WEIGHT = 1;
 export const MAX_WEIGHT = 5;
@@ -10,12 +10,25 @@ export const MAX_WEIGHT = 5;
  */
 export const UNRATED_WEIGHT = MIN_WEIGHT;
 
-export const weightOf = (item: LedgerItem) => item.weight ?? UNRATED_WEIGHT;
+/** what a line was rated at, before anything came back at it */
+export const statedWeight = (item: LedgerItem | Counter) => item.weight ?? UNRATED_WEIGHT;
+
+const counterWeight = (item: LedgerItem) =>
+  (item.counters ?? [])
+    .filter((counter) => counter.text.trim().length > 0)
+    .reduce((sum, counter) => sum + statedWeight(counter), 0);
+
+/**
+ * What a line actually counts for. A counter is the answer that comes straight back at it,
+ * and it takes weight off the line it answers rather than piling onto the other column —
+ * a pro you have an answer to is a smaller pro, not a new con.
+ */
+export const weightOf = (item: LedgerItem) => Math.max(0, statedWeight(item) - counterWeight(item));
 
 export const WEIGHT_LABEL: Record<number, string> = {
   1: 'Barely counts',
   2: 'Counts a little',
-  3: 'Counts',
+  3: 'Counts fairly',
   4: 'Counts a lot',
   5: 'Decisive on its own',
 };

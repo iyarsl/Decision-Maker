@@ -12,6 +12,7 @@ import { persist } from 'zustand/middleware';
 import {
   DOC_VERSION,
   isResolved,
+  type Counter,
   type DecisionDoc,
   type LedgerItem,
   type NodeKind,
@@ -82,6 +83,10 @@ interface DecisionState {
   addLedgerItem: (nodeId: string, side: Side) => string;
   updateLedgerItem: (nodeId: string, itemId: string, patch: Partial<LedgerItem>) => void;
   removeLedgerItem: (nodeId: string, itemId: string) => void;
+
+  addCounter: (nodeId: string, itemId: string) => string;
+  updateCounter: (nodeId: string, itemId: string, counterId: string, patch: Partial<Counter>) => void;
+  removeCounter: (nodeId: string, itemId: string, counterId: string) => void;
 
   openWeigh: (nodeId: string) => void;
   closeWeigh: () => void;
@@ -398,6 +403,51 @@ export const useDecisionStore = create<DecisionState>()(
       removeLedgerItem: (nodeId, itemId) =>
         set((state) => ({
           doc: patchLedger(state.doc, nodeId, (ledger) => ledger.filter((item) => item.id !== itemId)),
+        })),
+
+      addCounter: (nodeId, itemId) => {
+        const counterId = id();
+        set((state) => ({
+          doc: patchLedger(state.doc, nodeId, (ledger) =>
+            ledger.map((item) =>
+              item.id === itemId
+                ? { ...item, counters: [...(item.counters ?? []), { id: counterId, text: '' }] }
+                : item,
+            ),
+          ),
+        }));
+        return counterId;
+      },
+
+      updateCounter: (nodeId, itemId, counterId, patch) =>
+        set((state) => ({
+          doc: patchLedger(state.doc, nodeId, (ledger) =>
+            ledger.map((item) => {
+              if (item.id !== itemId) return item;
+              return {
+                ...item,
+                counters: (item.counters ?? []).map((counter) => {
+                  if (counter.id !== counterId) return counter;
+                  const next = { ...counter, ...patch };
+                  if (next.weight !== undefined) {
+                    next.weight = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, Math.round(next.weight)));
+                  }
+                  return next;
+                }),
+              };
+            }),
+          ),
+        })),
+
+      removeCounter: (nodeId, itemId, counterId) =>
+        set((state) => ({
+          doc: patchLedger(state.doc, nodeId, (ledger) =>
+            ledger.map((item) =>
+              item.id === itemId
+                ? { ...item, counters: (item.counters ?? []).filter((c) => c.id !== counterId) }
+                : item,
+            ),
+          ),
         })),
 
       // the card stays selected behind the page, so closing it lands back where you were

@@ -34,7 +34,7 @@ async function weigh(page: Page, label: string, items: ['pro' | 'con', string, n
   await expect(sheet).toBeVisible();
   for (const [side, text, weight] of items) {
     await page.getByRole('button', { name: side === 'pro' ? '+ Add a pro' : '+ Add a con' }).click();
-    const row = page.locator(`.ledger__side--${side} .ledger__row`).last();
+    const row = page.locator(`.ledger__side--${side} .ledger__item`).last();
     await row.locator('.ledger__text').fill(text);
     await row.getByRole('radio', { name: String(weight), exact: true }).click();
   }
@@ -62,8 +62,8 @@ test('map a decision, write into it, and weigh the options', async ({ page }) =>
   await expect(nodeCard(page, 'Take the offer')).toHaveClass(/is-resolved/);
   await expect(nodeCard(page, 'Stay and renegotiate')).toHaveClass(/is-unresolved/);
 
-  // clarity meter counts written branches (1 of 4)
-  await expect(page.locator('.clarity__label .data')).toHaveText('1/4');
+  // clarity counts the written branch and the decision card, which is a fork, not a claim
+  await expect(page.locator('.clarity__label .data')).toHaveText('2/4');
 
   // each branch carries its own case: Take the offer nets 5+3-2 = +6
   await weigh(page, 'Take the offer', [
@@ -108,18 +108,53 @@ test('rating a line is optional — an unrated one still counts, as one', async 
 
   // two pros, neither rated: a plain tally
   await page.getByRole('button', { name: '+ Add a pro' }).click();
-  await sheet.locator('.ledger__side--pro .ledger__row').last().locator('.ledger__text').fill('Better pay');
+  await sheet.locator('.ledger__side--pro .ledger__item').last().locator('.ledger__text').fill('Better pay');
   await page.getByRole('button', { name: '+ Add a pro' }).click();
-  await sheet.locator('.ledger__side--pro .ledger__row').last().locator('.ledger__text').fill('Ships weekly');
+  await sheet.locator('.ledger__side--pro .ledger__item').last().locator('.ledger__text').fill('Ships weekly');
   await expect(sheet.locator('.ledger__weight.is-unrated')).toHaveCount(2);
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2');
 
   // rating one says more; clicking the same step again takes the rating back off
-  const first = sheet.locator('.ledger__side--pro .ledger__row').first();
+  const first = sheet.locator('.ledger__side--pro .ledger__item').first();
   await first.getByRole('radio', { name: '4', exact: true }).click();
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +5');
   await first.getByRole('radio', { name: '4', exact: true }).click();
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2');
+});
+
+test('a line can be answered, and the answer takes weight off it', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  const sheet = page.getByRole('dialog', { name: 'Weigh this branch' });
+
+  await page.getByRole('button', { name: '+ Add a pro' }).click();
+  const line = sheet.locator('.ledger__side--pro .ledger__item').last();
+  await line.locator('.ledger__text').fill('Better pay');
+  await line.getByRole('radio', { name: '4', exact: true }).click();
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +4');
+
+  // the con that comes straight back at that pro is written under it, not in the other column
+  await line.getByRole('button', { name: 'But…' }).click();
+  const counter = line.locator('.counter');
+  await counter.locator('.counter__text').fill('Cost of living is higher there');
+  await counter.getByRole('radio', { name: '3', exact: true }).click();
+
+  // it comes off that pro rather than becoming a con of its own: 4 − 3 = 1
+  await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +1');
+  await expect(sheet.locator('.ledger__side--con .ledger__item')).toHaveCount(0);
+  await expect(line.locator('.ledger__weight-label').first()).toHaveText('Answered — counts 1');
+
+  // and it travels to the comparison under the line it answers
+  await page.keyboard.press('Escape');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await nodeCard(page, QUESTION).first().click();
+  await page.getByRole('button', { name: 'Compare branches' }).click();
+  const compare = page.getByRole('dialog', { name: 'Compare branches' });
+  await expect(compare.locator('.compare-side__counter')).toContainText('Cost of living is higher there');
+  await expect(compare.locator('.compare-side__counter .compare-side__weight')).toHaveText('−3');
 });
 
 test('a v1 grid becomes each branch its own pros and cons', async ({ page }) => {

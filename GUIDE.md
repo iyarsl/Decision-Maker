@@ -64,6 +64,8 @@ The big field is **"Your thinking here."** This is the point of the app. Write w
 
 The moment there's text in it, the card resolves: solid border, full contrast, filled dot. Its edge to the parent stops being dashed. The Clarity meter ticks up.
 
+**Decision cards are clear from the start.** A decision is a fork, not a claim — the thinking that answers it belongs on the branches under it, so it never sits in the fog waiting for a paragraph. Options and outcomes are the ones that have to be written.
+
 Also in the panel:
 
 - **Gut read** — a quick emotional register, kept deliberately separate from the analysis. It's for what the scoring misses.
@@ -85,6 +87,10 @@ Write them in your own words. There are no criteria to invent, and nothing has t
 
 **Rating a line is optional.** Beside each one are five steps, from *barely counts* to *decisive on its own*. Leave them alone and the line still counts — as one, so an unrated list behaves like a plain tally of pros against cons. Rate the ones where the size is the point. Clicking the step a line is already on takes the rating back off.
 
+**Answer a line where it stands.** Under every pro is **But…**, and under every con **Even so…** — for the thing that comes straight back at it. *Better pay* ×4, answered by *rent there eats most of it* ×3, is a pro worth 1, not a pro of 4 and a new con of 3. The answer is written under the line it belongs to, in the other side's colour, and takes its weight off that line — never below zero. A line can hold several answers.
+
+This is the difference between a list and an argument: a pro you already have a reply to shouldn't keep its full size just because you wrote it down first.
+
 The bottom of the page keeps the running total: `net = for − against`, with the two bars showing which side is carrying weight. The card on the canvas wears that net as a small badge, so the map shows where the thinking landed without opening anything.
 
 **Back to the map** or **Esc** returns to the canvas, exactly where you left it.
@@ -93,7 +99,7 @@ The bottom of the page keeps the running total: `net = for − against`, with th
 
 Select the card the branches hang off — usually the root — and hit **Compare**. It needs at least two branches; it is disabled on a leaf.
 
-Every branch gets a column: its net, then its pros and cons with their weights. **Nothing is typed here.** The comparison is only ever a reading of the pages you already wrote, so the two can never disagree. **Weigh this branch** on any column takes you to that page to fix it.
+Every branch gets a column: its net, then its pros and cons with what each counts after any answer, and those answers nested underneath. **Nothing is typed here.** The comparison is only ever a reading of the pages you already wrote, so the two can never disagree. **Weigh this branch** on any column takes you to that page to fix it.
 
 The line in the footer says it in words:
 

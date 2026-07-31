@@ -179,9 +179,37 @@
 
 .compare-side__item {
   display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.compare-side__line {
+  display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-2);
+}
+
+/* the answer sits under what it answers, in the other side's colour */
+.compare-side__counter {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--edge);
+  color: var(--mist);
+  font-family: var(--reading);
+  font-size: var(--step--2);
+  line-height: 1.45;
+}
+
+.compare-side__counter--pro {
+  border-left-color: var(--risk);
+}
+
+.compare-side__counter--con {
+  border-left-color: var(--gain);
 }
 
 .compare-side__text {

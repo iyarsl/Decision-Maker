@@ -33,8 +33,10 @@ React Flow nodes/edges) plus view state (`selectedNodeId`, `weighNodeId`, `compa
 `undo`). Every mutation goes through `touch()` so `updatedAt` cannot drift. React Flow is fully controlled
 from here.
 
-**Derived, never stored:** a branch is "resolved" when `data.note` has content (`isResolved` in
-`src/types.ts`). The clarity meter, node styling and edge fading all read that.
+**Derived, never stored:** a branch is "resolved" when `data.note` has content — **or when its kind is
+`decision`**, which is a fork rather than a claim and so is never in the fog (`isResolved` in
+`src/types.ts`). The clarity meter, node styling and edge fading all read that. The walkthrough's
+`writtenCount` deliberately does not: it is waiting for the user to type, so it counts notes.
 
 **The root is `doc.nodes[0]`** — not "the node with no parent", because a card dropped on empty canvas also
 has no parent. The root cannot be deleted and takes no incoming connections; loose cards can be both.
@@ -47,7 +49,9 @@ parent and guard against cycles.
 (`side: 'pro' | 'con'`, `text`, optional `weight` 1–5), so a branch carries its own case and deleting the
 node takes it. `src/store/scoring.ts` is the only maths: `balanceOf(data)` gives for/against/net, and
 `compareBranches(children)` ranks an intersection. **`weight` is optional and an unrated line counts as
-one** (`weightOf` / `UNRATED_WEIGHT`) — never read `item.weight` directly. Closing a comparison of
+one**, and **a line's `counters` come off its own weight** (floored at zero) rather than scoring for the
+other side — so `weightOf(item)` is the only correct way to ask what a line counts, and `statedWeight` is
+for the rating controls alone. Never read `item.weight` directly. Closing a comparison of
 branches that are weighed and untied writes `verdict` onto the node they hang off.
 
 **Two full-screen surfaces, one at a time.** `weighNodeId` opens `src/branch/BranchPage.tsx` (the only
