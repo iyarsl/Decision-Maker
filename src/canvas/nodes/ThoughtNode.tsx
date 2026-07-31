@@ -4,7 +4,7 @@ import { useDecisionStore } from '../../store/useDecisionStore';
 import { FEELINGS } from '../../panel/feelings';
 import { NODE_WIDTH } from '../layout';
 
-export function ThoughtNode({ id, data, selected }: NodeProps<TreeNode>) {
+export function ThoughtNode({ id, data }: NodeProps<TreeNode>) {
   const addChild = useDecisionStore((s) => s.addChild);
   const openGridForNode = useDecisionStore((s) => s.openGridForNode);
   const toggleChosen = useDecisionStore((s) => s.toggleChosen);
@@ -13,13 +13,16 @@ export function ThoughtNode({ id, data, selected }: NodeProps<TreeNode>) {
   // the first node is the decision itself: it cannot be deleted, and nothing feeds into it.
   // A node dropped on empty canvas is not root — it can be deleted and connected up later.
   const isRoot = useDecisionStore((s) => s.doc.nodes[0]?.id === id);
+  const solo = useDecisionStore((s) => s.selectedNodeId === id);
 
   const resolved = isResolved(data);
   const feeling = data.feeling === undefined ? undefined : FEELINGS.find((f) => f.value === data.feeling);
 
   return (
     <>
-      <NodeToolbar isVisible={selected} position={Position.Top} offset={10}>
+      {/* one toolbar, or none: its actions speak for a single card, so a multi-selection
+          leaves it out rather than stacking three sets of buttons on the canvas */}
+      <NodeToolbar isVisible={solo} position={Position.Top} offset={10}>
         <div className="node-tools">
           <button className="btn" onClick={() => addChild(id)} title="Add a branch from here">
             + Branch

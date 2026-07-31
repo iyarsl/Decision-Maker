@@ -42,6 +42,16 @@
   transform: translateY(-1px);
 }
 
+/* held in a selection — one card or a handful, they read the same and move together */
+.react-flow__node.selected .node-card {
+  border-color: var(--mist);
+  box-shadow: var(--shadow-lift), 0 0 0 1px var(--mist);
+}
+
+.react-flow__node.dragging .node-card {
+  cursor: grabbing;
+}
+
 .node-card__head {
   display: flex;
   align-items: center;
@@ -178,6 +188,11 @@
 .canvas-hint__pending {
   margin-top: var(--sp-1);
   color: var(--mist);
+}
+
+.canvas-hint__selection {
+  margin-top: var(--sp-1);
+  color: var(--clear);
 }
 
 .thought-edge {

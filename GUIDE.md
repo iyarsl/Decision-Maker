@@ -109,7 +109,8 @@ The canvas is fully live:
 - **Drag a card** to move it. **Drag empty space** to pan. **Scroll** to pan; **pinch or Ctrl+scroll** to zoom.
 - **Bottom-right controls** — zoom in/out, fit the whole tree on screen.
 - **Bottom-left minimap** — drag it to jump. Cards are colour-coded: amber = leaning, light = written, dark = still unwritten.
-- **Shift+drag** to box-select several cards; **Delete** removes the selection.
+- **Ctrl+click** (Cmd on a Mac) adds cards to a selection — drag any one of them and the whole group travels, keeping its shape. **Shift+drag** boxes a selection out of empty canvas. **Delete** removes everything held.
+- A selection of two or more closes the panel and hides the card toolbar: those actions speak for one card at a time.
 - A card dropped on empty canvas floats free until you drag a connector into it — and can be deleted like any other.
 
 ## 6. Saving, sharing, starting over

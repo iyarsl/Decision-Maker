@@ -25,16 +25,18 @@ export function Canvas() {
   const onEdgesChange = useDecisionStore((s) => s.onEdgesChange);
   const onConnect = useDecisionStore((s) => s.onConnect);
   const selectNode = useDecisionStore((s) => s.selectNode);
+  const focusNode = useDecisionStore((s) => s.focusNode);
   const addChild = useDecisionStore((s) => s.addChild);
   const addLooseNode = useDecisionStore((s) => s.addLooseNode);
   const selectedNodeId = useDecisionStore((s) => s.selectedNodeId);
   const { screenToFlowPosition } = useReactFlow();
 
+  // the panel speaks for one card at a time; a multi-selection has nothing single to say
   const onSelectionChange = useCallback(
     ({ nodes: selection }: OnSelectionChangeParams) => {
-      selectNode(selection.length === 1 ? selection[0].id : null);
+      focusNode(selection.length === 1 ? selection[0].id : null);
     },
-    [selectNode],
+    [focusNode],
   );
 
   const onPaneDoubleClick = useCallback(
@@ -71,6 +73,7 @@ export function Canvas() {
   );
 
   const unwritten = nodes.filter((node) => !isResolved(node.data)).length;
+  const selectedCount = nodes.filter((node) => node.selected).length;
 
   return (
     <div className="canvas" onKeyDown={onKeyDown}>
@@ -87,7 +90,7 @@ export function Canvas() {
         onDoubleClick={onPaneDoubleClick}
         onPaneClick={() => selectNode(null)}
         deleteKeyCode={['Delete', 'Backspace']}
-        multiSelectionKeyCode={['Shift']}
+        multiSelectionKeyCode={['Control', 'Meta', 'Shift']}
         selectionKeyCode={['Shift']}
         panOnScroll
         panOnDrag
@@ -108,7 +111,12 @@ export function Canvas() {
           position="bottom-left"
         />
         <Panel position="top-left" className="canvas-hint">
-          <p className="data">Drag to move · double-click for a branch · drag a handle to connect</p>
+          <p className="data">Drag to move · ctrl-click for several · double-click for a branch</p>
+          {selectedCount > 1 && (
+            <p className="canvas-hint__selection data" role="status">
+              {selectedCount} branches held — drag one, they all move
+            </p>
+          )}
           {unwritten > 0 && (
             <p className="canvas-hint__pending data">
               {unwritten} branch{unwritten === 1 ? '' : 'es'} still unwritten

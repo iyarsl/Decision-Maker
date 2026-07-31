@@ -64,6 +64,7 @@ interface DecisionState {
   addChild: (parentId: string, kind?: NodeKind) => string;
   addLooseNode: (position: { x: number; y: number }, kind?: NodeKind) => string;
   updateNodeData: (nodeId: string, patch: Partial<TreeNodeData>) => void;
+  focusNode: (nodeId: string | null) => void;
   deleteNode: (nodeId: string) => void;
   toggleChosen: (nodeId: string) => void;
 
@@ -221,6 +222,10 @@ export const useDecisionStore = create<DecisionState>()(
             doc: nodes === state.doc.nodes ? state.doc : { ...state.doc, nodes },
           };
         }),
+
+      // React Flow already owns the flags here — a Ctrl-click adds to the selection, and
+      // rewriting the flags from one id would throw the rest of it away
+      focusNode: (nodeId) => set({ selectedNodeId: nodeId }),
 
       addChild: (parentId, kind) => {
         const childId = id();

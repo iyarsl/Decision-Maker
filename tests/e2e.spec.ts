@@ -206,6 +206,40 @@ test('the walkthrough starts on a first visit and follows the work', async ({ pa
   await expect(page.locator('.guide__card')).toBeVisible();
 });
 
+test('ctrl-click holds several branches and they travel together', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+  await addBranch(page, QUESTION, 'Stay and renegotiate');
+  await addBranch(page, QUESTION, 'Wait six months');
+
+  await nodeCard(page, 'Take the offer').click();
+  await nodeCard(page, 'Stay and renegotiate').click({ modifiers: ['Control'] });
+  await expect(page.locator('.react-flow__node.selected')).toHaveCount(2);
+  await expect(page.locator('.canvas-hint__selection')).toContainText('2 branches held');
+  // two cards give the panel nothing single to say, and one toolbar is enough
+  await expect(page.locator('.panel')).toHaveCount(0);
+  await expect(page.locator('.node-tools')).toHaveCount(0);
+
+  const held = (await nodeCard(page, 'Take the offer').boundingBox())!;
+  const dragged = (await nodeCard(page, 'Stay and renegotiate').boundingBox())!;
+  const left = (await nodeCard(page, 'Wait six months').boundingBox())!;
+
+  await page.mouse.move(dragged.x + dragged.width / 2, dragged.y + 14);
+  await page.mouse.down();
+  await page.mouse.move(dragged.x + dragged.width / 2 - 200, dragged.y + 160, { steps: 12 });
+  await page.mouse.up();
+
+  const heldNow = (await nodeCard(page, 'Take the offer').boundingBox())!;
+  const draggedNow = (await nodeCard(page, 'Stay and renegotiate').boundingBox())!;
+  const leftNow = (await nodeCard(page, 'Wait six months').boundingBox())!;
+
+  // both selected cards move by the same delta; the unselected one stays put
+  expect(Math.abs(draggedNow.x - dragged.x)).toBeGreaterThan(150);
+  expect(Math.abs(heldNow.x - held.x - (draggedNow.x - dragged.x))).toBeLessThan(4);
+  expect(Math.abs(heldNow.y - held.y - (draggedNow.y - dragged.y))).toBeLessThan(4);
+  expect(Math.abs(leftNow.x - left.x)).toBeLessThan(2);
+});
+
 test('the canvas pans, zooms, and moves nodes', async ({ page }) => {
   await fresh(page);
   const viewport = page.locator('.react-flow__viewport');
