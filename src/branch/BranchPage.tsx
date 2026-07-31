@@ -101,6 +101,7 @@ export function BranchPage() {
                           item={item}
                           autoFocus={item.id === freshId}
                           anchorWeight={index === 0 && row === 0}
+                          onEnter={() => setFreshId(addLedgerItem(nodeId, side))}
                         />
                       ))}
                     </ul>
@@ -159,12 +160,14 @@ function LedgerRow({
   item,
   autoFocus,
   anchorWeight,
+  onEnter,
 }: {
   nodeId: string;
   item: LedgerItem;
   autoFocus: boolean;
   /** the walkthrough points at one weight control; this is the one */
   anchorWeight: boolean;
+  onEnter: () => void;
 }) {
   const updateLedgerItem = useDecisionStore((s) => s.updateLedgerItem);
   const removeLedgerItem = useDecisionStore((s) => s.removeLedgerItem);
@@ -187,6 +190,7 @@ function LedgerRow({
         placeholder={item.side === 'pro' ? 'Something for it' : 'Something against it'}
         aria-label={item.side === 'pro' ? 'A pro' : 'A con'}
         onChange={(event) => updateLedgerItem(nodeId, item.id, { text: event.target.value })}
+        onKeyDown={(event) => onEnterAdds(event, onEnter)}
       />
 
       <div className="ledger__meta">
@@ -234,6 +238,7 @@ function LedgerRow({
               counter={counter}
               side={item.side}
               autoFocus={counter.id === freshCounter}
+              onEnter={() => setFreshCounter(addCounter(nodeId, item.id))}
             />
           ))}
         </ul>
@@ -261,12 +266,14 @@ function CounterRow({
   counter,
   side,
   autoFocus,
+  onEnter,
 }: {
   nodeId: string;
   itemId: string;
   counter: Counter;
   side: Side;
   autoFocus: boolean;
+  onEnter: () => void;
 }) {
   const updateCounter = useDecisionStore((s) => s.updateCounter);
   const removeCounter = useDecisionStore((s) => s.removeCounter);
@@ -284,6 +291,7 @@ function CounterRow({
         placeholder={side === 'pro' ? 'But…' : 'Even so…'}
         aria-label={side === 'pro' ? 'A con answering this pro' : 'A pro answering this con'}
         onChange={(event) => updateCounter(nodeId, itemId, counter.id, { text: event.target.value })}
+        onKeyDown={(event) => onEnterAdds(event, onEnter)}
       />
 
       <div className="counter__meta">
@@ -322,6 +330,17 @@ function CounterRow({
       </div>
     </li>
   );
+}
+
+/**
+ * Enter starts the next line rather than a second paragraph of this one — listing is the
+ * common case, and a line long enough to need its own break can still have one with
+ * shift+Enter. An empty line adds nothing: there is one waiting already.
+ */
+function onEnterAdds(event: React.KeyboardEvent<HTMLTextAreaElement>, add: () => void) {
+  if (event.key !== 'Enter' || event.shiftKey) return;
+  event.preventDefault();
+  if (event.currentTarget.value.trim()) add();
 }
 
 /**

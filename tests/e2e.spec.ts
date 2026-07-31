@@ -126,6 +126,36 @@ test('rating a line is optional — an unrated one still counts, as one', async 
   await expect(sheet.locator('.ledger__figures strong')).toHaveText('net +2');
 });
 
+test('Enter starts the next line, shift+Enter breaks this one', async ({ page }) => {
+  await fresh(page);
+  await addBranch(page, QUESTION, 'Take the offer');
+
+  await nodeCard(page, 'Take the offer').click();
+  await page.getByRole('button', { name: "What's for it, what's against" }).click();
+  const sheet = page.getByRole('dialog', { name: 'Weigh this branch' });
+  const pros = sheet.locator('.ledger__side--pro .ledger__item');
+
+  await page.getByRole('button', { name: '+ Add a pro' }).click();
+  await page.keyboard.type('Better pay');
+  await page.keyboard.press('Enter');
+  await expect(pros).toHaveCount(2);
+
+  // the new line has the caret, so listing never leaves the keyboard
+  await page.keyboard.type('Ships weekly');
+  await expect(pros.last().locator('.ledger__text')).toHaveValue('Ships weekly');
+
+  // shift+Enter stays in the line it is in
+  await page.keyboard.press('Shift+Enter');
+  await page.keyboard.type('every Thursday');
+  await expect(pros).toHaveCount(2);
+  await expect(pros.last().locator('.ledger__text')).toHaveValue('Ships weekly\nevery Thursday');
+
+  // and an empty line adds nothing — there is one waiting already
+  await page.getByRole('button', { name: '+ Add a pro' }).click();
+  await page.keyboard.press('Enter');
+  await expect(pros).toHaveCount(3);
+});
+
 test('a line can be answered, and the answer takes weight off it', async ({ page }) => {
   await fresh(page);
   await addBranch(page, QUESTION, 'Take the offer');
