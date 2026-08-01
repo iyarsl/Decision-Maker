@@ -45,7 +45,11 @@ jobs:
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
 
+      # enablement turns Pages on the first time, so the first release does not need
+      # someone to visit the settings page before it can land
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
