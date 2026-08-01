@@ -1,0 +1,765 @@
+{
+  "id": "1q0n4Dpt",
+  "version": 2,
+  "question": "should i leave the army",
+  "createdAt": "2026-07-31T11:47:46.201Z",
+  "updatedAt": "2026-07-31T18:35:55.995Z",
+  "nodes": [
+    {
+      "id": "j1QYGBdF",
+      "type": "thought",
+      "position": {
+        "x": 0,
+        "y": 415
+      },
+      "data": {
+        "label": "האם להישאר בצבא?",
+        "kind": "decision",
+        "note": "",
+        "chosen": false
+      },
+      "measured": {
+        "width": 252,
+        "height": 127
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "enVrYI3F",
+      "type": "thought",
+      "position": {
+        "x": 360,
+        "y": 249
+      },
+      "data": {
+        "label": "להישאר בצבא בקבע",
+        "kind": "option",
+        "note": "לחתום בתפקיד שאני רוצה להמשיך את התפות המקצועית שלי",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "_2y7ZTWX",
+            "side": "con",
+            "text": "הישארות במסגרת צבאית \"סגורה\" - כלומר מסגרת",
+            "weight": 2
+          },
+          {
+            "id": "JY0BHa8W",
+            "side": "pro",
+            "text": "ניסיון מקצועי",
+            "counters": [],
+            "weight": 5
+          },
+          {
+            "id": "SboeYnsA",
+            "side": "pro",
+            "text": "עניין ומשמעות",
+            "weight": 4
+          },
+          {
+            "id": "MU2M6HtK",
+            "side": "pro",
+            "text": "ביטחון תעסוקתי",
+            "weight": 3
+          },
+          {
+            "id": "b_E4jFok",
+            "side": "pro",
+            "text": "למידת מקצוע חדש",
+            "weight": 4
+          },
+          {
+            "id": "sak3qUTR",
+            "side": "pro",
+            "text": "להישאר בסביבה של האנשים הכי מוכשרים בעולם",
+            "weight": 4
+          },
+          {
+            "id": "3nqVH49b",
+            "side": "pro",
+            "text": "סביבת עבודה צעירה",
+            "weight": 3
+          },
+          {
+            "id": "EbffIT_V",
+            "side": "con",
+            "text": "דיליי של כ-2 שנים לתחילת החיים",
+            "weight": 3
+          },
+          {
+            "id": "FTjrhqDZ",
+            "side": "con",
+            "text": "סיכוי לשיעמום חברתי ואי שינוי של הסביבה שלי בסופש",
+            "weight": 5
+          },
+          {
+            "id": "XdYFfwT6",
+            "side": "con",
+            "text": "הAI משנה את השוק והצבא לא מותאם לזה",
+            "weight": 3
+          },
+          {
+            "id": "b1QWFFwi",
+            "side": "con",
+            "text": "האם זה מה שאני רוצה לעשות בחיים???",
+            "weight": 5
+          },
+          {
+            "id": "DkWwLUFR",
+            "side": "pro",
+            "text": "חשיפה לסביבה חברתית חדשה ",
+            "weight": 3
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 161
+      },
+      "dragging": false
+    },
+    {
+      "id": "NcXQ9ljc",
+      "type": "thought",
+      "position": {
+        "x": 360,
+        "y": 830
+      },
+      "data": {
+        "label": "להשתחרר",
+        "kind": "option",
+        "note": "לצאת מהצבא להתחיל את החיים של אחרי",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "4_e6TI9N",
+            "side": "pro",
+            "text": "חופש לעשות מה שאני רוצה ",
+            "weight": 3
+          },
+          {
+            "id": "WjNG-Cw0",
+            "side": "pro",
+            "text": "שינוי סביבתי",
+            "weight": 5
+          },
+          {
+            "id": "5HPFPq-7",
+            "side": "pro",
+            "text": "יכולת לגור במדינה אחרת",
+            "weight": 4
+          },
+          {
+            "id": "0iQCVvpI",
+            "side": "pro",
+            "text": "לחוות פעם ראשונה חיים מחוץ למסגרת",
+            "weight": 3
+          },
+          {
+            "id": "lpnQcwfp",
+            "side": "con",
+            "text": "לא למצוא את עצמי במהלך השבוע",
+            "weight": 4
+          },
+          {
+            "id": "kRYa9Joj",
+            "side": "con",
+            "text": "דרוש לכלכל את עצמי",
+            "counters": [],
+            "weight": 3
+          }
+        ],
+        "verdict": {
+          "winnerLabel": "ללכת ללמוד",
+          "score": 16,
+          "margin": 13
+        }
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 176
+      },
+      "dragging": false
+    },
+    {
+      "id": "kOy0N0S8",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 498
+      },
+      "data": {
+        "label": "ללכת לטייל",
+        "kind": "option",
+        "note": "טיול \"גדול\" איפה שאני רוצה עם תקציב מוגבל",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "1o0g5ki-",
+            "side": "pro",
+            "text": "לחוות טיול בגיל צעיר עם חופש מוחלט",
+            "weight": 5
+          },
+          {
+            "id": "XdnvrOpq",
+            "side": "con",
+            "text": "אין לי חופש אמיתי כי אני מאוד מוגבל תקציבית",
+            "weight": 4
+          },
+          {
+            "id": "Z0frAwSC",
+            "side": "con",
+            "text": "לא דחוף לי",
+            "weight": 2
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 142
+      },
+      "dragging": false
+    },
+    {
+      "id": "Wc5lu_wV",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 747
+      },
+      "data": {
+        "label": "ללכת ללמוד",
+        "kind": "option",
+        "note": "תחילת תהליך ללמידה בחו\"ל",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "DPrEBvhi",
+            "side": "pro",
+            "text": "למידת מקצוע שמעניין אותי",
+            "weight": 4
+          },
+          {
+            "id": "LOrZyB6m",
+            "side": "pro",
+            "text": "סביבה חברתית טובה ",
+            "weight": 5
+          },
+          {
+            "id": "qIEC89vc",
+            "side": "pro",
+            "text": "חוויה סדונטיאלית",
+            "weight": 5
+          },
+          {
+            "id": "4Jj7cgwY",
+            "side": "pro",
+            "text": "מעבר לחול ",
+            "weight": 4
+          },
+          {
+            "id": "I3QzQUjg",
+            "side": "con",
+            "text": "יכול להיות שהמקצוע הנלמד לא יהיה רלוונטמ עוד כמה שנים",
+            "weight": 5
+          },
+          {
+            "id": "xssf8v74",
+            "side": "pro",
+            "text": "חיזוק יכולות למידה ואת שריר המוח",
+            "weight": 3
+          },
+          {
+            "id": "93ED6Gcf",
+            "side": "con",
+            "text": "אי ביטחון תעסוקתי ",
+            "weight": 3,
+            "counters": []
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 142
+      },
+      "dragging": false
+    },
+    {
+      "id": "HEL7Z4la",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 996
+      },
+      "data": {
+        "label": "להקים עסק (להיות עצמאי)",
+        "kind": "option",
+        "note": "התחלתה פרוייקט משלי שיש לי בו עניין ולנסות לפתח אותו לתוך עסק",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "oVNOAQB3",
+            "side": "con",
+            "text": "וויתור על חיים חברתיים",
+            "weight": 5
+          },
+          {
+            "id": "FbwO0pGj",
+            "side": "pro",
+            "text": "חוויה מגניבה ",
+            "weight": 3
+          },
+          {
+            "id": "r8rOYKxH",
+            "side": "pro",
+            "text": "אפשר ללמידה מנסיון וטעיה",
+            "weight": 3
+          },
+          {
+            "id": "127NnHz2",
+            "side": "pro",
+            "text": "פוטנציאל מימוש והשגת חופש כלכלי",
+            "weight": 4
+          },
+          {
+            "id": "dVhiNOh1",
+            "side": "pro",
+            "text": "יכולת מימוש יותר טובה כי אפשר לנצל את השינויים בשוק שקוראים עם הAI",
+            "weight": 3
+          },
+          {
+            "id": "L41Y6W53",
+            "side": "con",
+            "text": "אפשר לעשות את זה בהמשך החיים",
+            "weight": 4
+          },
+          {
+            "id": "mY-SW2OL",
+            "side": "con",
+            "text": "סיכוי גדול להיכשלות",
+            "weight": 4
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 161
+      },
+      "dragging": false
+    },
+    {
+      "id": "KGZ5OMFq",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 1162
+      },
+      "data": {
+        "label": "ללכת לעבוד",
+        "kind": "option",
+        "note": "לנסות להתקבל לעבודה בהייטק למקצוע מעניין שיכניס לי כסף",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "JRkJNW3Z",
+            "side": "pro",
+            "text": "כסף ותנאים טובים",
+            "weight": 4
+          },
+          {
+            "id": "glVo499j",
+            "side": "con",
+            "text": "חברתית קשוח בעבודה",
+            "weight": 3
+          },
+          {
+            "id": "r50POcDT",
+            "side": "pro",
+            "text": "עוד ניסיון",
+            "weight": 2
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 161
+      },
+      "dragging": false
+    },
+    {
+      "id": "Z6HNSN1y",
+      "type": "thought",
+      "position": {
+        "x": 1080,
+        "y": 498
+      },
+      "data": {
+        "label": "לחזור לארץ בלי כסף",
+        "kind": "outcome",
+        "note": "חוזר אחרי טיול לארץ בלי כסף או תוכנית ",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 102
+      },
+      "dragging": false
+    },
+    {
+      "id": "aKfMuTLY",
+      "type": "thought",
+      "position": {
+        "x": 1080,
+        "y": 747
+      },
+      "data": {
+        "label": "הכנה לאוניברסיטה",
+        "kind": "outcome",
+        "note": "מהשחרור עד נובמבר/דצמבר אני אתמקד בלמידה לSAT וכתיבת הcollage essay",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 121
+      },
+      "dragging": false
+    },
+    {
+      "id": "AVZO0AAi",
+      "type": "thought",
+      "position": {
+        "x": 1440,
+        "y": 664
+      },
+      "data": {
+        "label": "ללכת לטייל לזמן מוקצב",
+        "kind": "option",
+        "note": "אחרי הלמידה והגשת המעומדות לcollage אני אלך לטייל לכמה זמן ואחזור בזמן לפני המעבר מדינה",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 140
+      },
+      "dragging": false
+    },
+    {
+      "id": "Omx3ODbl",
+      "type": "thought",
+      "position": {
+        "x": 1440,
+        "y": 830
+      },
+      "data": {
+        "label": "ללכת לעבוד",
+        "kind": "option",
+        "note": "לחצי שנה אני אלך לעבוד וארוויח כסף (בתקווה שיקבלו אותי)",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 121
+      },
+      "dragging": false
+    },
+    {
+      "id": "2tsMMAcF",
+      "type": "thought",
+      "position": {
+        "x": 1800,
+        "y": 830
+      },
+      "data": {
+        "label": "טיול קצר",
+        "kind": "outcome",
+        "note": "אחרי עבודה של כחצי שנה אלך לטייל לזמן מועט (חודש וקצת כנראה) ",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 121
+      },
+      "dragging": false
+    },
+    {
+      "id": "IqB1xtKs",
+      "type": "thought",
+      "position": {
+        "x": 360,
+        "y": 0
+      },
+      "data": {
+        "label": "להאריך שירות לכמה חודשים ",
+        "kind": "option",
+        "note": "להאריך שירות סדיר ארבעה חודשים מקסימום ובינתיים להישאר בצבא",
+        "chosen": false,
+        "ledger": [
+          {
+            "id": "RGfi2iml",
+            "side": "pro",
+            "text": "אפשרות לחשוב יותר זמן ולהתראיין ליותר מקומות כדי לגבש דעה שאני יותר שלם איתה",
+            "counters": [
+              {
+                "id": "u_ln3WWX",
+                "text": "היה לי כבר מספיק זמן לחשוב... מה ישתנה?"
+              }
+            ],
+            "weight": 3
+          },
+          {
+            "id": "b6DWhLS0",
+            "side": "pro",
+            "text": "בזמן הזה משהו יכול להשתהות בפן החברתי מה שיכול לשנות את ההסתכלות שלי לגבי ההחלטה",
+            "weight": 3
+          },
+          {
+            "id": "tCOQ3QYm",
+            "side": "con",
+            "text": "עוד זמן בלי שינוי - המצב החברתי הסטטי שאני רוצה לצאת ממנו נמשך",
+            "weight": 5
+          }
+        ]
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 161
+      },
+      "dragging": false
+    },
+    {
+      "id": "qk1sDHE2",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 249
+      },
+      "data": {
+        "label": "לטייל תוך כדי הצבא",
+        "kind": "outcome",
+        "note": "טיולים של 3 שבועות בסגנון לאוס פעם בשנה \nאו\nטיולים קצרים כמה פעמים בשנה כמו שבוע סקי ושבועיים אירופה",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 140
+      },
+      "dragging": false
+    },
+    {
+      "id": "UMwamq3v",
+      "type": "thought",
+      "position": {
+        "x": 720,
+        "y": 0
+      },
+      "data": {
+        "label": "הכנה לאוניברסיטה",
+        "kind": "outcome",
+        "note": "ללמוד לSAT והכנת Collage essay תוך כדי הישארות במסגרת עבודה של הצבא וקבלת משכורת מינמלית",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 140
+      },
+      "dragging": false
+    },
+    {
+      "id": "WzYIuk8G",
+      "type": "thought",
+      "position": {
+        "x": 1080,
+        "y": 166
+      },
+      "data": {
+        "label": "להתחיל תואר תוך כדי",
+        "kind": "option",
+        "note": "אני יכול להתחיל תואר בפתוחה של קורסים שמעניינים אותי ואז לעשות אפיק מעבר בשחרור",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 121
+      },
+      "dragging": false
+    },
+    {
+      "id": "pAAyvmz9",
+      "type": "thought",
+      "position": {
+        "x": 1080,
+        "y": 332
+      },
+      "data": {
+        "label": "לעשות פרוייקט אישי תוך כדי",
+        "kind": "option",
+        "note": "להתחיל להניע פרוייקט משלי שיביא לי עניין ",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 102
+      },
+      "dragging": false
+    },
+    {
+      "id": "6AKIeWTJ",
+      "type": "thought",
+      "position": {
+        "x": 2112.2032710280373,
+        "y": 642.3621495327103
+      },
+      "data": {
+        "label": "מעבר מדינה ותחילת לימודים",
+        "kind": "outcome",
+        "note": "כניסה ללימודים לתואר ראשון",
+        "chosen": false
+      },
+      "selected": false,
+      "measured": {
+        "width": 252,
+        "height": 102
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "5zFli0vF",
+      "source": "j1QYGBdF",
+      "target": "enVrYI3F",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "L19I7U8I",
+      "source": "j1QYGBdF",
+      "target": "NcXQ9ljc",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "8hY7QrsA",
+      "source": "NcXQ9ljc",
+      "target": "kOy0N0S8",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "6pFMy9Kj",
+      "source": "NcXQ9ljc",
+      "target": "Wc5lu_wV",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "mYpJWwzz",
+      "source": "NcXQ9ljc",
+      "target": "HEL7Z4la",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "BiTBANUM",
+      "source": "NcXQ9ljc",
+      "target": "KGZ5OMFq",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "fxFedgzp",
+      "source": "kOy0N0S8",
+      "target": "Z6HNSN1y",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "VmmImbRT",
+      "source": "Wc5lu_wV",
+      "target": "aKfMuTLY",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "kkU4S-PT",
+      "source": "aKfMuTLY",
+      "target": "AVZO0AAi",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "8xO9ZCwM",
+      "source": "aKfMuTLY",
+      "target": "Omx3ODbl",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "qJPYviqT",
+      "source": "Omx3ODbl",
+      "target": "2tsMMAcF",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "DYWmfMfm",
+      "source": "j1QYGBdF",
+      "target": "IqB1xtKs",
+      "type": "thought"
+    },
+    {
+      "id": "b_xyi3gL",
+      "source": "IqB1xtKs",
+      "target": "UMwamq3v",
+      "type": "thought",
+      "selected": false
+    },
+    {
+      "id": "4Xr9neTD",
+      "source": "enVrYI3F",
+      "target": "qk1sDHE2",
+      "type": "thought"
+    },
+    {
+      "id": "9OfG5Foo",
+      "source": "qk1sDHE2",
+      "target": "WzYIuk8G",
+      "type": "thought"
+    },
+    {
+      "id": "gm7DnPLP",
+      "source": "qk1sDHE2",
+      "target": "pAAyvmz9",
+      "type": "thought"
+    },
+    {
+      "id": "2oKvkbWS",
+      "source": "AVZO0AAi",
+      "target": "6AKIeWTJ",
+      "type": "thought"
+    },
+    {
+      "id": "uRcOv4s8",
+      "source": "2tsMMAcF",
+      "target": "6AKIeWTJ",
+      "type": "thought"
+    }
+  ]
+}
