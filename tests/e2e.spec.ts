@@ -296,7 +296,9 @@ test('decide mode puts the editing away and leaves the choosing', async ({ page 
   expect(await positions(page)).toEqual(stored);
 
   await page.keyboard.press('Delete');
-  await page.locator('.react-flow__pane').dblclick({ position: { x: 120, y: 640 } });
+  // dispatched rather than clicked at a point: which part of the canvas is empty depends on
+  // the viewport, and on a short one the minimap sits where the coordinates used to land
+  await page.locator('.react-flow__pane').dispatchEvent('dblclick');
   await expect(page.locator('.node-card')).toHaveCount(3);
 
   // taking a path is still yours to record
