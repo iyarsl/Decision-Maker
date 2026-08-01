@@ -68,7 +68,14 @@ git push --follow-tags
 push to `main`, so a tag is rarely where you find out something broke. Landing URL:
 `https://<user>.github.io/Decision-Maker/`.
 
-Once, in the repository: **Settings → Pages → Source: GitHub Actions**.
+Two one-time repository settings, both of which fail loudly if missed:
+
+1. **Settings → Pages → Source: GitHub Actions** — otherwise `configure-pages` reports
+   *Get Pages site failed*. The workflow cannot do this itself: creating the site needs admin rights the
+   workflow token does not have.
+2. **Settings → Environments → `github-pages` → Deployment branches and tags** — add a **Tag** rule `v*`.
+   The environment defaults to the default branch only, so a tag is refused with
+   *not allowed to deploy to github-pages due to environment protection rules*.
 
 A project site is served from a subpath, so the deploy passes `BASE_PATH=/<repo>/` to the build
 (`vite.config.ts`). Everywhere else — the dev server, a local build — stays at the root. Hosting it at a
